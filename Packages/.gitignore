@@ -1,5 +1,3 @@
 /*/
-!com.vrchat.core.*
-
-# Change this to match your new package name
-!com.vrchat.demo-template 
+!com.vrchat.core.*/
+!net.nekobako.editor-patcher/
