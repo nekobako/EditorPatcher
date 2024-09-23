@@ -6,6 +6,6 @@ Tools to enhance the Unity Editor.
   - Add the ability to search and filter blendshapes in the Inspector for Skinned Mesh Renderer.
 
 ## Installation
-1. Press `Add to VCC` button in [VPM Listing](https://nekobako.github.io/vpm-listing/) and register the repository.
+1. Press `Add to VCC` button in [VPM Listing](https://vpm.nekobako.net) and register the repository.
 2. Press `Manage Project` button at your project in VCC.
 4. Press `+` button at the right of `Editor Patcher` package.
