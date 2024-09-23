@@ -14,9 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Fix required Unity version.
 
 ### Security
+
+## [0.2.0] - 2024-09-23
+### Fixed
+- Fix required Unity version.
 
 ## [0.1.0] - 2024-09-23
 ### Added
