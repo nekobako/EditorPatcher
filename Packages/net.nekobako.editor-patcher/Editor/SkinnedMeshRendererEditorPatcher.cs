@@ -108,6 +108,12 @@ namespace net.nekobako.EditorPatcher.Editor
                     return;
                 }
 
+                if (property.serializedObject.targetObjects.Length > 1)
+                {
+                    GUILayout.Label("Multi-object editing not supported.", EditorStyles.helpBox);
+                    return;
+                }
+
                 if (PlayerSettings.legacyClampBlendShapeWeights)
                 {
                     EditorGUILayout.HelpBox(s_ClampWeightsInfoContent.text, MessageType.Info);
