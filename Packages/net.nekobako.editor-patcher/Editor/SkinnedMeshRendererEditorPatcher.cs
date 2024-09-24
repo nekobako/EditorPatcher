@@ -74,27 +74,29 @@ namespace net.nekobako.EditorPatcher.Editor
                 fixedHeight = 0.0f,
             };
 
-            private readonly UnityEditor.Editor m_Editor = null;
             private readonly SearchField m_SearchField = new();
             private readonly ReorderableList m_ReorderableList = new(null, typeof(BlendShape), false, true, false, false)
             {
                 headerHeight = 30.0f,
             };
 
+            private SkinnedMeshRenderer m_Renderer = null;
             private Mesh m_Mesh = null;
             private Dictionary<string, List<BlendShape>> m_BlendShapes = new();
             private string m_SearchText = string.Empty;
             private string[] m_GroupNames = Array.Empty<string>();
             private int m_GroupMask = ~0;
-
-            public BlendShapesDrawer(UnityEditor.Editor editor)
-            {
-                m_Editor = editor;
-            }
+            private bool m_IsShowZero = true;
 
             public void Draw(SerializedProperty property)
             {
-                var mesh = (m_Editor.target as SkinnedMeshRenderer).sharedMesh;
+                var renderer = property.serializedObject.targetObject as SkinnedMeshRenderer;
+                if (renderer == null)
+                {
+                    return;
+                }
+
+                var mesh = renderer.sharedMesh;
                 if (mesh == null || mesh.blendShapeCount == 0)
                 {
                     return;
@@ -111,8 +113,9 @@ namespace net.nekobako.EditorPatcher.Editor
                     EditorGUILayout.HelpBox(s_ClampWeightsInfoContent.text, MessageType.Info);
                 }
 
-                if (mesh != m_Mesh)
+                if (renderer != m_Renderer || mesh != m_Mesh)
                 {
+                    m_Renderer = renderer;
                     m_Mesh = mesh;
 
                     UpdateBlendShapes();
@@ -134,13 +137,16 @@ namespace net.nekobako.EditorPatcher.Editor
 
                     EditorGUI.BeginChangeCheck();
 
-                    rect.xMin -= 0.0f;
-                    rect.xMax -= 102.0f;
+                    rect.width -= 126.0f;
                     m_SearchText = m_SearchField.OnGUI(rect, m_SearchText, s_SearchFieldStyle, s_SearchFieldCancelButtonStyle, s_SearchFieldCancelButtonEmptyStyle);
 
-                    rect.xMin += rect.width + 2.0f;
-                    rect.xMax += 102.0f;
+                    rect.xMin = rect.xMax + 2.0f;
+                    rect.xMax = rect.xMin + 100.0f;
                     m_GroupMask = EditorGUI.MaskField(rect, m_GroupMask, m_GroupNames, s_PopupStyle);
+
+                    rect.xMin = rect.xMax + 2.0f;
+                    rect.xMax = rect.xMin + 22.0f;
+                    m_IsShowZero = GUI.Toggle(rect, m_IsShowZero, "0", GUI.skin.button);
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -208,6 +214,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 m_ReorderableList.list = m_BlendShapes
                     .Where(x => (m_GroupMask & 1 << Array.IndexOf(m_GroupNames, x.Key)) != 0)
                     .SelectMany(x => x.Value)
+                    .Where(x => m_IsShowZero || x.Index < m_Mesh.blendShapeCount && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                     .Where(x => m_SearchText.Split().All(y => x.Name.Contains(y, StringComparison.OrdinalIgnoreCase)))
                     .OrderBy(x => x.Index)
                     .ToList();
@@ -269,7 +276,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
             if (!s_BlendShapesDrawers.TryGetValue(__instance, out var drawer))
             {
-                s_BlendShapesDrawers.Add(__instance, drawer = new(__instance));
+                s_BlendShapesDrawers.Add(__instance, drawer = new());
             }
 
             drawer.Draw(___m_BlendShapeWeights);
