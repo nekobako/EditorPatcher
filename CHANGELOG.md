@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Add toggle to show or hide blendshapes with value 0.
 
 ### Changed
 
@@ -15,9 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Show message that multi-object editing is not supported.
 
 ### Security
+
+## [0.3.0] - 2024-09-24
+### Added
+- Add toggle to show or hide blendshapes with value 0.
+
+### Fixed
+- Show message that multi-object editing is not supported.
 
 ## [0.2.1] - 2024-09-23
 ### Fixed
