@@ -42,6 +42,17 @@ namespace net.nekobako.EditorPatcher.Editor
             }
         }
 
+        private class BlendShapeGroup
+        {
+            public readonly string Name = string.Empty;
+            public readonly List<BlendShape> BlendShapes = new List<BlendShape>();
+
+            public BlendShapeGroup(string name)
+            {
+                Name = name;
+            }
+        }
+
         private class BlendShapesDrawer
         {
             private const string k_DefaultGroupName = "Default";
@@ -81,7 +92,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
             private SkinnedMeshRenderer m_Renderer = null;
             private Mesh m_Mesh = null;
-            private Dictionary<string, List<BlendShape>> m_BlendShapes = new Dictionary<string, List<BlendShape>>();
+            private List<BlendShapeGroup> m_BlendShapeGroups = new List<BlendShapeGroup>();
             private string m_SearchText = string.Empty;
             private string[] m_GroupNames = Array.Empty<string>();
             private int m_GroupMask = ~0;
@@ -190,38 +201,34 @@ namespace net.nekobako.EditorPatcher.Editor
 
             private void UpdateBlendShapes()
             {
-                m_BlendShapes.Clear();
+                m_BlendShapeGroups.Clear();
+                m_BlendShapeGroups.Add(new BlendShapeGroup(k_DefaultGroupName));
 
-                var groups = new List<string>() { k_DefaultGroupName };
                 for (var i = 0; i < m_Mesh.blendShapeCount; i++)
                 {
                     var shape = new BlendShape(m_Mesh, i);
                     var match = Regex.Match(shape.Name, k_GroupNamePattern);
                     if (match.Success)
                     {
-                        groups.Add(match.Groups[1].Value);
+                        m_BlendShapeGroups.Add(new BlendShapeGroup(match.Groups[1].Value));
                     }
 
-                    if (!m_BlendShapes.TryGetValue(groups[groups.Count - 1], out var shapes))
-                    {
-                        m_BlendShapes.Add(groups[groups.Count - 1], shapes = new List<BlendShape>());
-                    }
-
-                    shapes.Add(shape);
+                    m_BlendShapeGroups.Last().BlendShapes.Add(shape);
                 }
 
-                m_GroupNames = groups.ToArray();
+                m_GroupNames = m_BlendShapeGroups
+                    .Select(x => x.Name)
+                    .ToArray();
                 m_GroupMask = ~0;
             }
 
             private void UpdateReorderableList()
             {
-                m_ReorderableList.list = m_BlendShapes
-                    .Where(x => (m_GroupMask & 1 << Array.IndexOf(m_GroupNames, x.Key)) != 0)
-                    .SelectMany(x => x.Value)
+                m_ReorderableList.list = m_BlendShapeGroups
+                    .Where((x, i) => (m_GroupMask & 1 << i) != 0)
+                    .SelectMany(x => x.BlendShapes)
                     .Where(x => m_ShowZero || x.Index < m_Mesh.blendShapeCount && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                     .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
-                    .OrderBy(x => x.Index)
                     .ToList();
             }
         }
@@ -264,7 +271,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 return true;
             }
 
-            if (s_BlendShapesDrawers.Keys.Any(x => x == null))
+            if (s_BlendShapesDrawers.Any(x => x.Key == null))
             {
                 s_BlendShapesDrawers = s_BlendShapesDrawers
                     .Where(x => x.Key != null)
