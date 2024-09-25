@@ -19,26 +19,26 @@ namespace net.nekobako.EditorPatcher.Editor
         private static readonly Type s_TargetType = AccessTools.TypeByName("UnityEditor.SkinnedMeshRendererEditor");
         private static readonly Dictionary<UnityEditor.Editor, BlendShapesDrawer> s_BlendShapesDrawers = new();
 
-        private readonly struct BlendShape
+        private class BlendShape
         {
-            public readonly int Index;
-            public readonly string Name;
-            public readonly GUIContent Content;
-            public readonly float MinValue;
-            public readonly float MaxValue;
+            public readonly int Index = 0;
+            public readonly string Name = string.Empty;
+            public readonly GUIContent Content = null;
+            public readonly float MinWeight = 0.0f;
+            public readonly float MaxWeight = 0.0f;
 
             public BlendShape(Mesh mesh, int index)
             {
                 Index = index;
                 Name = mesh.GetBlendShapeName(index);
                 Content = new(Name);
-                MinValue = 0.0f;
-                MaxValue = 0.0f;
+                MinWeight = 0.0f;
+                MaxWeight = 0.0f;
                 for (var i = 0; i < mesh.GetBlendShapeFrameCount(index); i++)
                 {
                     var weight = mesh.GetBlendShapeFrameWeight(index, i);
-                    MinValue = Mathf.Min(weight, MinValue);
-                    MaxValue = Mathf.Max(weight, MaxValue);
+                    MinWeight = Mathf.Min(weight, MinWeight);
+                    MaxWeight = Mathf.Max(weight, MaxWeight);
                 }
             }
         }
@@ -86,7 +86,7 @@ namespace net.nekobako.EditorPatcher.Editor
             private string m_SearchText = string.Empty;
             private string[] m_GroupNames = Array.Empty<string>();
             private int m_GroupMask = ~0;
-            private bool m_IsShowZero = true;
+            private bool m_ShowZero = true;
 
             public void Draw(SerializedProperty property)
             {
@@ -152,7 +152,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
                     rect.xMin = rect.xMax + 2.0f;
                     rect.xMax = rect.xMin + 22.0f;
-                    m_IsShowZero = GUI.Toggle(rect, m_IsShowZero, "0", GUI.skin.button);
+                    m_ShowZero = GUI.Toggle(rect, m_ShowZero, "0", GUI.skin.button);
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -167,7 +167,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     {
                         var prop = property.GetArrayElementAtIndex(shape.Index);
                         Traverse.Create<EditorGUI>()
-                            .Method(nameof(EditorGUI.Slider), new object[] { rect, prop, shape.MinValue, shape.MaxValue, float.MinValue, float.MaxValue, shape.Content })
+                            .Method(nameof(EditorGUI.Slider), rect, prop, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue, shape.Content)
                             .GetValue();
                     }
                     else
@@ -175,7 +175,7 @@ namespace net.nekobako.EditorPatcher.Editor
                         EditorGUI.BeginChangeCheck();
 
                         var value = Traverse.Create<EditorGUI>()
-                            .Method(nameof(EditorGUI.Slider), new object[] { rect, shape.Content, 0.0f, shape.MinValue, shape.MaxValue, float.MinValue, float.MaxValue })
+                            .Method(nameof(EditorGUI.Slider), rect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue)
                             .GetValue<float>();
 
                         if (EditorGUI.EndChangeCheck())
@@ -220,7 +220,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 m_ReorderableList.list = m_BlendShapes
                     .Where(x => (m_GroupMask & 1 << Array.IndexOf(m_GroupNames, x.Key)) != 0)
                     .SelectMany(x => x.Value)
-                    .Where(x => m_IsShowZero || x.Index < m_Mesh.blendShapeCount && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
+                    .Where(x => m_ShowZero || x.Index < m_Mesh.blendShapeCount && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                     .Where(x => m_SearchText.Split().All(y => x.Name.Contains(y, StringComparison.OrdinalIgnoreCase)))
                     .OrderBy(x => x.Index)
                     .ToList();
