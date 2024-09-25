@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Pool;
 using HarmonyLib;
 
 namespace net.nekobako.EditorPatcher.Editor
@@ -17,7 +16,7 @@ namespace net.nekobako.EditorPatcher.Editor
         private const string k_MenuPath = "Tools/Editor Patcher/Skinned Mesh Renderer Editor";
 
         private static readonly Type s_TargetType = AccessTools.TypeByName("UnityEditor.SkinnedMeshRendererEditor");
-        private static readonly Dictionary<UnityEditor.Editor, BlendShapesDrawer> s_BlendShapesDrawers = new();
+        private static Dictionary<UnityEditor.Editor, BlendShapesDrawer> s_BlendShapesDrawers = new Dictionary<UnityEditor.Editor, BlendShapesDrawer>();
 
         private class BlendShape
         {
@@ -31,7 +30,7 @@ namespace net.nekobako.EditorPatcher.Editor
             {
                 Index = index;
                 Name = mesh.GetBlendShapeName(index);
-                Content = new(Name);
+                Content = new GUIContent(Name);
                 MinWeight = 0.0f;
                 MaxWeight = 0.0f;
                 for (var i = 0; i < mesh.GetBlendShapeFrameCount(index); i++)
@@ -48,41 +47,41 @@ namespace net.nekobako.EditorPatcher.Editor
             private const string k_DefaultGroupName = "Default";
             private const string k_GroupNamePattern = @"^(?:\W|\p{Pc}){3,}(.*?)(?:\W|\p{Pc}){3,}$";
 
-            private static readonly GUIContent s_PropertyContent = new("BlendShapes");
+            private static readonly GUIContent s_PropertyContent = new GUIContent("BlendShapes");
             private static readonly GUIContent s_ClampWeightsInfoContent = Traverse.Create(s_TargetType)
                 .Type("Styles")
                 .Field("legacyClampBlendShapeWeightsInfo")
                 .GetValue<GUIContent>();
-            private static readonly GUIStyle s_SearchFieldStyle = new("SearchTextField")
+            private static readonly GUIStyle s_SearchFieldStyle = new GUIStyle("SearchTextField")
             {
                 fixedHeight = 0.0f,
             };
-            private static readonly GUIStyle s_SearchFieldCancelButtonStyle = new("SearchCancelButton")
+            private static readonly GUIStyle s_SearchFieldCancelButtonStyle = new GUIStyle("SearchCancelButton")
             {
                 fixedHeight = 0.0f,
             };
-            private static readonly GUIStyle s_SearchFieldCancelButtonEmptyStyle = new("SearchCancelButtonEmpty")
+            private static readonly GUIStyle s_SearchFieldCancelButtonEmptyStyle = new GUIStyle("SearchCancelButtonEmpty")
             {
                 fixedHeight = 0.0f,
             };
-            private static readonly GUIStyle s_PopupStyle = new("MiniPopup")
+            private static readonly GUIStyle s_PopupStyle = new GUIStyle("MiniPopup")
             {
                 fixedHeight = 0.0f,
             };
-            private static readonly GUIStyle s_ReorderableListHeaderStyle = new("RL Header")
+            private static readonly GUIStyle s_ReorderableListHeaderStyle = new GUIStyle("RL Header")
             {
                 fixedHeight = 0.0f,
             };
 
-            private readonly SearchField m_SearchField = new();
-            private readonly ReorderableList m_ReorderableList = new(null, typeof(BlendShape), false, true, false, false)
+            private readonly SearchField m_SearchField = new SearchField();
+            private readonly ReorderableList m_ReorderableList = new ReorderableList(null, typeof(BlendShape), false, true, false, false)
             {
                 headerHeight = 30.0f,
             };
 
             private SkinnedMeshRenderer m_Renderer = null;
             private Mesh m_Mesh = null;
-            private Dictionary<string, List<BlendShape>> m_BlendShapes = new();
+            private Dictionary<string, List<BlendShape>> m_BlendShapes = new Dictionary<string, List<BlendShape>>();
             private string m_SearchText = string.Empty;
             private string[] m_GroupNames = Array.Empty<string>();
             private int m_GroupMask = ~0;
@@ -203,9 +202,9 @@ namespace net.nekobako.EditorPatcher.Editor
                         groups.Add(match.Groups[1].Value);
                     }
 
-                    if (!m_BlendShapes.TryGetValue(groups[^1], out var shapes))
+                    if (!m_BlendShapes.TryGetValue(groups[groups.Count - 1], out var shapes))
                     {
-                        m_BlendShapes.Add(groups[^1], shapes = new());
+                        m_BlendShapes.Add(groups[groups.Count - 1], shapes = new List<BlendShape>());
                     }
 
                     shapes.Add(shape);
@@ -221,7 +220,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     .Where(x => (m_GroupMask & 1 << Array.IndexOf(m_GroupNames, x.Key)) != 0)
                     .SelectMany(x => x.Value)
                     .Where(x => m_ShowZero || x.Index < m_Mesh.blendShapeCount && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
-                    .Where(x => m_SearchText.Split().All(y => x.Name.Contains(y, StringComparison.OrdinalIgnoreCase)))
+                    .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
                     .OrderBy(x => x.Index)
                     .ToList();
             }
@@ -253,7 +252,7 @@ namespace net.nekobako.EditorPatcher.Editor
             var harmony = new Harmony(k_PatchId);
 
             var onBlendShapeUI = AccessTools.Method(s_TargetType, "OnBlendShapeUI");
-            harmony.Patch(onBlendShapeUI, new(typeof(SkinnedMeshRendererEditorPatcher), nameof(OnBlendShapeUI)));
+            harmony.Patch(onBlendShapeUI, new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(OnBlendShapeUI)));
 
             AssemblyReloadEvents.beforeAssemblyReload += () => harmony.UnpatchAll();
         }
@@ -265,24 +264,16 @@ namespace net.nekobako.EditorPatcher.Editor
                 return true;
             }
 
-            using (ListPool<UnityEditor.Editor>.Get(out var outdated))
+            if (s_BlendShapesDrawers.Keys.Any(x => x == null))
             {
-                foreach (var editor in s_BlendShapesDrawers.Keys)
-                {
-                    if (editor == null)
-                    {
-                        outdated.Add(editor);
-                    }
-                }
-                foreach (var editor in outdated)
-                {
-                    s_BlendShapesDrawers.Remove(editor);
-                }
+                s_BlendShapesDrawers = s_BlendShapesDrawers
+                    .Where(x => x.Key != null)
+                    .ToDictionary(x => x.Key, x => x.Value);
             }
 
             if (!s_BlendShapesDrawers.TryGetValue(__instance, out var drawer))
             {
-                s_BlendShapesDrawers.Add(__instance, drawer = new());
+                s_BlendShapesDrawers.Add(__instance, drawer = new BlendShapesDrawer());
             }
 
             drawer.Draw(___m_BlendShapeWeights);

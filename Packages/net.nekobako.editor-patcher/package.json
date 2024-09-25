@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "displayName": "Editor Patcher",
   "description": "Tools to enhance the Unity Editor",
-  "unity": "2022.3",
+  "unity": "2019.4",
   "author": {
     "name": "nekobako",
     "url": "https://nekobako.net"
