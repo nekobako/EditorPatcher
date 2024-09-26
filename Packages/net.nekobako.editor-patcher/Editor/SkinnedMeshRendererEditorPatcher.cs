@@ -15,23 +15,23 @@ namespace net.nekobako.EditorPatcher.Editor
         private const string k_PatchId = "net.nekobako.editor-patcher.skinned-mesh-renderer-editor-patcher";
         private const string k_MenuPath = "Tools/Editor Patcher/Skinned Mesh Renderer Editor";
 
-        private static readonly Type s_TargetType = AccessTools.TypeByName("UnityEditor.SkinnedMeshRendererEditor");
-        private static readonly Type s_GUIViewType = AccessTools.TypeByName("UnityEditor.GUIView");
         private static Dictionary<UnityEditor.Editor, BlendShapesDrawer> s_BlendShapesDrawers = new Dictionary<UnityEditor.Editor, BlendShapesDrawer>();
 
-        private class BlendShape
+        private class BlendShape : ITreeData
         {
             public readonly int Index = 0;
             public readonly string Name = string.Empty;
-            public readonly GUIContent Content = null;
             public readonly float MinWeight = 0.0f;
             public readonly float MaxWeight = 0.0f;
+
+            int ITreeData.Id => Index;
+            int ITreeData.Depth => 0;
+            string ITreeData.DisplayName => Name;
 
             public BlendShape(Mesh mesh, int index)
             {
                 Index = index;
                 Name = mesh.GetBlendShapeName(index);
-                Content = new GUIContent(Name);
                 MinWeight = 0.0f;
                 MaxWeight = 0.0f;
                 for (var i = 0; i < mesh.GetBlendShapeFrameCount(index); i++)
@@ -61,11 +61,26 @@ namespace net.nekobako.EditorPatcher.Editor
             private const int k_RowHeight = 24;
             private const int k_LineHeight = 22;
 
-            private static readonly GUIContent s_PropertyContent = new GUIContent("BlendShapes");
-            private static readonly GUIContent s_ClampWeightsInfoContent = Traverse.Create(s_TargetType)
-                .Type("Styles")
-                .Field("legacyClampBlendShapeWeightsInfo")
-                .GetValue<GUIContent>();
+            private static readonly Traverse s_GUIViewCurrent = Traverse.CreateWithType("UnityEditor.GUIView")
+                .Property("current");
+            private static readonly Traverse s_EditorGUILineHeight = Traverse.Create<EditorGUI>()
+                .Property("lineHeight");
+            private static readonly Traverse s_EditorGUISlider = Traverse.Create<EditorGUI>()
+                .Method(nameof(EditorGUI.Slider), new[]
+                {
+                    typeof(Rect),
+                    typeof(GUIContent),
+                    typeof(float),
+                    typeof(float),
+                    typeof(float),
+                    typeof(float),
+                    typeof(float),
+                    typeof(GUIStyle),
+                    typeof(GUIStyle),
+                    typeof(GUIStyle),
+                    typeof(Texture2D),
+                    typeof(GUIStyle),
+                });
             private static readonly GUIStyle s_HeaderStyle = new GUIStyle("RL Header")
             {
                 fixedHeight = k_LineHeight + 8,
@@ -119,17 +134,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 alignment = TextAnchor.MiddleLeft,
             };
 
-            private class Item : TreeViewItem
-            {
-                public readonly BlendShape BlendShape = null;
-
-                public Item(BlendShape shape) : base(shape.Index, 0, shape.Name)
-                {
-                    BlendShape = shape;
-                }
-            }
-
-            private readonly List<BlendShapeGroup> m_BlendShapeGroups = new List<BlendShapeGroup>();
+            private readonly List<BlendShapeGroup> m_Groups = new List<BlendShapeGroup>();
             private readonly SearchField m_SearchField = new SearchField();
 
             private SerializedProperty m_Property = null;
@@ -165,24 +170,30 @@ namespace net.nekobako.EditorPatcher.Editor
 
                 if (property.serializedObject.targetObjects.Length > 1)
                 {
-                    GUILayout.Label("Multi-object editing not supported.", EditorStyles.helpBox);
+                    EditorGUILayout.HelpBox("Multi-object editing not supported.", MessageType.None);
+                    EditorGUILayout.Space();
+                    return;
+                }
+
+                // Workaround for errors caused by TreeView.enableItemHovering = true
+                if (s_GUIViewCurrent.GetValue() == null)
+                {
                     return;
                 }
 
                 if (PlayerSettings.legacyClampBlendShapeWeights)
                 {
-                    EditorGUILayout.HelpBox(s_ClampWeightsInfoContent.text, MessageType.Info);
+                    EditorGUILayout.HelpBox("Note that BlendShape weight range is clamped. This can be disabled in Player Settings.", MessageType.Info);
                 }
 
                 m_Property = property;
 
-                var renderer = property.serializedObject.targetObject as SkinnedMeshRenderer;
-                var mesh = renderer.sharedMesh;
+                var mesh = (property.serializedObject.targetObject as SkinnedMeshRenderer).sharedMesh;
                 if (mesh != m_Mesh)
                 {
                     m_Mesh = mesh;
 
-                    UpdateBlendShapeGroups();
+                    UpdateGroups();
                     Reload();
                 }
 
@@ -207,18 +218,16 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     if (rootItem.children.Count > 0)
                     {
-                        Traverse.Create<EditorGUI>()
-                            .Property("lineHeight")
-                            .SetValue(k_RowHeight);
+                        // EditorGUI.Slider to be aligned vertically
+                        s_EditorGUILineHeight.SetValue(k_RowHeight);
 
                         rect = EditorGUILayout.GetControlRect(false, totalHeight - 3);
                         rect.min -= new Vector2(5, 2);
                         rect.max += new Vector2(5, 1);
                         OnGUI(rect);
 
-                        Traverse.Create<EditorGUI>()
-                            .Property("lineHeight")
-                            .SetValue(EditorGUIUtility.singleLineHeight);
+                        // Restore to original line height
+                        s_EditorGUILineHeight.SetValue(EditorGUIUtility.singleLineHeight);
                     }
                     else
                     {
@@ -229,10 +238,10 @@ namespace net.nekobako.EditorPatcher.Editor
                 EditorGUILayout.Space();
             }
 
-            private void UpdateBlendShapeGroups()
+            private void UpdateGroups()
             {
-                m_BlendShapeGroups.Clear();
-                m_BlendShapeGroups.Add(new BlendShapeGroup(k_DefaultGroupName));
+                m_Groups.Clear();
+                m_Groups.Add(new BlendShapeGroup(k_DefaultGroupName));
 
                 for (var i = 0; m_Mesh != null && i < m_Mesh.blendShapeCount; i++)
                 {
@@ -240,13 +249,13 @@ namespace net.nekobako.EditorPatcher.Editor
                     var match = Regex.Match(shape.Name, k_GroupNamePattern);
                     if (match.Success)
                     {
-                        m_BlendShapeGroups.Add(new BlendShapeGroup(match.Groups[1].Value));
+                        m_Groups.Add(new BlendShapeGroup(match.Groups[1].Value));
                     }
 
-                    m_BlendShapeGroups.Last().BlendShapes.Add(shape);
+                    m_Groups.Last().BlendShapes.Add(shape);
                 }
 
-                m_GroupNames = m_BlendShapeGroups
+                m_GroupNames = m_Groups
                     .Select(x => x.Name)
                     .ToArray();
                 m_GroupMask = ~0;
@@ -258,20 +267,20 @@ namespace net.nekobako.EditorPatcher.Editor
 
                 return new TreeViewItem(-1, -1)
                 {
-                    children = m_BlendShapeGroups
+                    children = m_Groups
                         .Where((x, i) => (m_GroupMask & 1 << i) != 0)
                         .SelectMany(x => x.BlendShapes)
                         .Where(x => m_ShowZero || m_Mesh != null && x.Index < m_Mesh.blendShapeCount && renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                         .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
-                        .Select(x => new Item(x))
+                        .Select(x => new TreeViewItem<BlendShape>(x))
                         .ToList<TreeViewItem>(),
                 };
             }
 
             protected override void RowGUI(RowGUIArgs args)
             {
-                var item = args.item as Item;
-                var shape = item.BlendShape;
+                var shape = (args.item as TreeViewItem<BlendShape>).Data;
+                var content = TempContent.Text(shape.Name);
 
                 var rect = args.rowRect;
                 rect.min += new Vector2(5, 0);
@@ -280,14 +289,13 @@ namespace net.nekobako.EditorPatcher.Editor
                 if (shape.Index < m_Property.arraySize)
                 {
                     var prop = m_Property.GetArrayElementAtIndex(shape.Index);
-                    var content = EditorGUI.BeginProperty(rect, shape.Content, prop);
+                    content = EditorGUI.BeginProperty(rect, content, prop);
 
                     EditorGUI.BeginChangeCheck();
 
-                    var value = Traverse.Create<EditorGUI>()
-                        .Method(nameof(EditorGUI.Slider), rect, content, prop.floatValue, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue,
-                            s_SliderNumberFieldStyle, s_SliderStyle, s_SliderThumbStyle, Texture2D.linearGrayTexture, s_SliderThumbExtentStyle)
-                        .GetValue<float>();
+                    var value = s_EditorGUISlider.GetValue<float>(
+                        rect, content, prop.floatValue, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue,
+                        s_SliderNumberFieldStyle, s_SliderStyle, s_SliderThumbStyle, Texture2D.linearGrayTexture, s_SliderThumbExtentStyle);
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -300,10 +308,9 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     EditorGUI.BeginChangeCheck();
 
-                    var value = Traverse.Create<EditorGUI>()
-                        .Method(nameof(EditorGUI.Slider), rect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue,
-                            s_SliderNumberFieldStyle, s_SliderStyle, s_SliderThumbStyle, Texture2D.linearGrayTexture, s_SliderThumbExtentStyle)
-                        .GetValue<float>();
+                    var value = s_EditorGUISlider.GetValue<float>(
+                        rect, content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue,
+                        s_SliderNumberFieldStyle, s_SliderStyle, s_SliderThumbStyle, Texture2D.linearGrayTexture, s_SliderThumbExtentStyle);
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -344,8 +351,8 @@ namespace net.nekobako.EditorPatcher.Editor
         {
             var harmony = new Harmony(k_PatchId);
 
-            var onBlendShapeUI = AccessTools.Method(s_TargetType, "OnBlendShapeUI");
-            harmony.Patch(onBlendShapeUI, new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(OnBlendShapeUI)));
+            harmony.Patch(AccessTools.Method("UnityEditor.SkinnedMeshRendererEditor:OnBlendShapeUI"),
+                new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(OnBlendShapeUI)));
 
             AssemblyReloadEvents.beforeAssemblyReload += () => harmony.UnpatchAll();
         }
@@ -353,14 +360,6 @@ namespace net.nekobako.EditorPatcher.Editor
         private static bool OnBlendShapeUI(UnityEditor.Editor __instance, SerializedProperty ___m_BlendShapeWeights)
         {
             if (!IsEnabled)
-            {
-                return true;
-            }
-
-            // Workaround for errors caused by TreeView.enableItemHovering = true
-            if (Traverse.Create(s_GUIViewType)
-                .Property("current")
-                .GetValue() == null)
             {
                 return true;
             }
