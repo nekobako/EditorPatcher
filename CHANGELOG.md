@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
+- Use TreeView instead of ReorderableList for better performance.
 
 ### Deprecated
 

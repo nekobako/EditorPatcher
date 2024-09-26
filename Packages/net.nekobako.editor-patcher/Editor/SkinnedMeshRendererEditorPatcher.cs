@@ -53,7 +53,7 @@ namespace net.nekobako.EditorPatcher.Editor
             }
         }
 
-        private class BlendShapesDrawer
+        private class BlendShapesDrawer : TreeView
         {
             private const string k_DefaultGroupName = "Default";
             private const string k_GroupNamePattern = @"^(?:\W|\p{Pc}){3,}(.*?)(?:\W|\p{Pc}){3,}$";
@@ -63,40 +63,67 @@ namespace net.nekobako.EditorPatcher.Editor
                 .Type("Styles")
                 .Field("legacyClampBlendShapeWeightsInfo")
                 .GetValue<GUIContent>();
+            private static readonly GUIStyle s_HeaderStyle = new GUIStyle("RL Header")
+            {
+                fixedHeight = 30.0f,
+                padding = new RectOffset(6, 6, 4, 4),
+            };
+            private static readonly GUIStyle s_BackgroundStyle = new GUIStyle("RL Background")
+            {
+                fixedHeight = 0.0f,
+                padding = new RectOffset(6, 6, 4, 4),
+            };
             private static readonly GUIStyle s_SearchFieldStyle = new GUIStyle("SearchTextField")
             {
                 fixedHeight = 0.0f,
+                margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_SearchFieldCancelButtonStyle = new GUIStyle("SearchCancelButton")
             {
                 fixedHeight = 0.0f,
+                margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_SearchFieldCancelButtonEmptyStyle = new GUIStyle("SearchCancelButtonEmpty")
             {
                 fixedHeight = 0.0f,
+                margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_PopupStyle = new GUIStyle("MiniPopup")
             {
                 fixedHeight = 0.0f,
+                margin = new RectOffset(2, 2, 2, 2),
             };
-            private static readonly GUIStyle s_ReorderableListHeaderStyle = new GUIStyle("RL Header")
+            private static readonly GUIStyle s_ToggleStyle = new GUIStyle("LargeButton")
             {
                 fixedHeight = 0.0f,
+                margin = new RectOffset(2, 2, 2, 2),
             };
 
-            private readonly SearchField m_SearchField = new SearchField();
-            private readonly ReorderableList m_ReorderableList = new ReorderableList(null, typeof(BlendShape), false, true, false, false)
+            private class Item : TreeViewItem
             {
-                headerHeight = 30.0f,
-            };
+                public readonly BlendShape BlendShape = null;
 
-            private SkinnedMeshRenderer m_Renderer = null;
+                public Item(BlendShape shape) : base(shape.Index, 0, shape.Name)
+                {
+                    BlendShape = shape;
+                }
+            }
+
+            private readonly List<BlendShapeGroup> m_BlendShapeGroups = new List<BlendShapeGroup>();
+            private readonly SearchField m_SearchField = new SearchField();
+
+            private SerializedProperty m_Property = null;
             private Mesh m_Mesh = null;
-            private List<BlendShapeGroup> m_BlendShapeGroups = new List<BlendShapeGroup>();
             private string m_SearchText = string.Empty;
             private string[] m_GroupNames = Array.Empty<string>();
             private int m_GroupMask = ~0;
             private bool m_ShowZero = true;
+
+            public BlendShapesDrawer() : base(new TreeViewState())
+            {
+                rowHeight = 22.0f;
+                useScrollView = false;
+            }
 
             public void Draw(SerializedProperty property)
             {
@@ -129,77 +156,49 @@ namespace net.nekobako.EditorPatcher.Editor
                     EditorGUILayout.HelpBox(s_ClampWeightsInfoContent.text, MessageType.Info);
                 }
 
-                if (renderer != m_Renderer || mesh != m_Mesh)
+                m_Property = property;
+
+                if (mesh != m_Mesh)
                 {
-                    m_Renderer = renderer;
                     m_Mesh = mesh;
 
-                    UpdateBlendShapes();
-                    UpdateReorderableList();
+                    UpdateBlendShapeGroups();
+                    Reload();
                 }
 
-                m_ReorderableList.drawHeaderCallback = rect =>
+                using (new EditorGUILayout.HorizontalScope(s_HeaderStyle))
                 {
-                    rect.min -= new Vector2(6.0f, 1.0f);
-                    rect.max += new Vector2(6.0f, 1.0f);
-
-                    if (Event.current.type == EventType.Repaint)
-                    {
-                        s_ReorderableListHeaderStyle.Draw(rect, false, false, false, false);
-                    }
-
-                    rect.min += new Vector2(6.0f, 4.0f);
-                    rect.max -= new Vector2(6.0f, 4.0f);
-
                     EditorGUI.BeginChangeCheck();
 
-                    rect.width -= 126.0f;
+                    var rect = EditorGUILayout.GetControlRect(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
                     m_SearchText = m_SearchField.OnGUI(rect, m_SearchText, s_SearchFieldStyle, s_SearchFieldCancelButtonStyle, s_SearchFieldCancelButtonEmptyStyle);
 
-                    rect.xMin = rect.xMax + 2.0f;
-                    rect.xMax = rect.xMin + 100.0f;
-                    m_GroupMask = EditorGUI.MaskField(rect, m_GroupMask, m_GroupNames, s_PopupStyle);
+                    m_GroupMask = EditorGUILayout.MaskField(m_GroupMask, m_GroupNames, s_PopupStyle, GUILayout.Width(100.0f), GUILayout.ExpandHeight(true));
 
-                    rect.xMin = rect.xMax + 2.0f;
-                    rect.xMax = rect.xMin + 22.0f;
-                    m_ShowZero = GUI.Toggle(rect, m_ShowZero, "0", GUI.skin.button);
+                    m_ShowZero = GUILayout.Toggle(m_ShowZero, "0", s_ToggleStyle, GUILayout.Width(22.0f), GUILayout.ExpandHeight(true));
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        UpdateReorderableList();
+                        Reload();
                     }
-                };
+                }
 
-                m_ReorderableList.drawElementCallback = (rect, index, isActive, isFocused) =>
+                using (new EditorGUILayout.HorizontalScope(s_BackgroundStyle))
                 {
-                    var shape = (BlendShape)m_ReorderableList.list[index];
-                    if (shape.Index < property.arraySize)
+                    if (rootItem.children.Count > 0)
                     {
-                        var prop = property.GetArrayElementAtIndex(shape.Index);
-                        Traverse.Create<EditorGUI>()
-                            .Method(nameof(EditorGUI.Slider), rect, prop, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue, shape.Content)
-                            .GetValue();
+                        OnGUI(EditorGUILayout.GetControlRect(false, totalHeight));
                     }
                     else
                     {
-                        EditorGUI.BeginChangeCheck();
-
-                        var value = Traverse.Create<EditorGUI>()
-                            .Method(nameof(EditorGUI.Slider), rect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue)
-                            .GetValue<float>();
-
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            property.arraySize = mesh.blendShapeCount;
-                            property.GetArrayElementAtIndex(shape.Index).floatValue = value;
-                        }
+                        EditorGUILayout.LabelField("List is Empty", GUILayout.Height(22.0f));
                     }
-                };
+                }
 
-                m_ReorderableList.DoLayoutList();
+                EditorGUILayout.Space();
             }
 
-            private void UpdateBlendShapes()
+            private void UpdateBlendShapeGroups()
             {
                 m_BlendShapeGroups.Clear();
                 m_BlendShapeGroups.Add(new BlendShapeGroup(k_DefaultGroupName));
@@ -222,14 +221,48 @@ namespace net.nekobako.EditorPatcher.Editor
                 m_GroupMask = ~0;
             }
 
-            private void UpdateReorderableList()
+            protected override TreeViewItem BuildRoot()
             {
-                m_ReorderableList.list = m_BlendShapeGroups
-                    .Where((x, i) => (m_GroupMask & 1 << i) != 0)
-                    .SelectMany(x => x.BlendShapes)
-                    .Where(x => m_ShowZero || x.Index < m_Mesh.blendShapeCount && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
-                    .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
-                    .ToList();
+                var renderer = m_Property.serializedObject.targetObject as SkinnedMeshRenderer;
+
+                return new TreeViewItem(-1, -1)
+                {
+                    children = m_BlendShapeGroups
+                        .Where((x, i) => (m_GroupMask & 1 << i) != 0)
+                        .SelectMany(x => x.BlendShapes)
+                        .Where(x => m_ShowZero || x.Index < m_Mesh.blendShapeCount && renderer.GetBlendShapeWeight(x.Index) != 0.0f)
+                        .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
+                        .Select(x => new Item(x))
+                        .ToList<TreeViewItem>(),
+                };
+            }
+
+            protected override void RowGUI(RowGUIArgs args)
+            {
+                var item = args.item as Item;
+                var shape = item.BlendShape;
+
+                if (shape.Index < m_Property.arraySize)
+                {
+                    var prop = m_Property.GetArrayElementAtIndex(shape.Index);
+                    Traverse.Create<EditorGUI>()
+                        .Method(nameof(EditorGUI.Slider), args.rowRect, prop, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue, shape.Content)
+                        .GetValue();
+                }
+                else
+                {
+                    EditorGUI.BeginChangeCheck();
+
+                    var value = Traverse.Create<EditorGUI>()
+                        .Method(nameof(EditorGUI.Slider), args.rowRect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue)
+                        .GetValue<float>();
+
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        m_Property.arraySize = m_Mesh.blendShapeCount;
+                        m_Property.GetArrayElementAtIndex(shape.Index).floatValue = value;
+                    }
+                }
             }
         }
 
