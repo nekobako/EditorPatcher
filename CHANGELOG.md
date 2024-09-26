@@ -8,16 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
-- Use TreeView instead of ReorderableList for better performance.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Fix duplicate group names filtering.
 
 ### Security
+
+## [0.5.0] - 2024-09-26
+### Changed
+- Use TreeView instead of ReorderableList for better performance.
+
+### Fixed
+- Fix duplicate group names filtering.
 
 ## [0.4.1] - 2024-09-25
 ### Fixed
