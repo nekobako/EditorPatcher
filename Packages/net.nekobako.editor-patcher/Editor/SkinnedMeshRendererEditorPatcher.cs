@@ -127,18 +127,6 @@ namespace net.nekobako.EditorPatcher.Editor
 
             public void Draw(SerializedProperty property)
             {
-                var renderer = property.serializedObject.targetObject as SkinnedMeshRenderer;
-                if (renderer == null)
-                {
-                    return;
-                }
-
-                var mesh = renderer.sharedMesh;
-                if (mesh == null || mesh.blendShapeCount == 0)
-                {
-                    return;
-                }
-
                 EditorGUILayout.PropertyField(property, s_PropertyContent, false);
                 if (!property.isExpanded)
                 {
@@ -158,6 +146,8 @@ namespace net.nekobako.EditorPatcher.Editor
 
                 m_Property = property;
 
+                var renderer = property.serializedObject.targetObject as SkinnedMeshRenderer;
+                var mesh = renderer.sharedMesh;
                 if (mesh != m_Mesh)
                 {
                     m_Mesh = mesh;
@@ -203,7 +193,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 m_BlendShapeGroups.Clear();
                 m_BlendShapeGroups.Add(new BlendShapeGroup(k_DefaultGroupName));
 
-                for (var i = 0; i < m_Mesh.blendShapeCount; i++)
+                for (var i = 0; m_Mesh != null && i < m_Mesh.blendShapeCount; i++)
                 {
                     var shape = new BlendShape(m_Mesh, i);
                     var match = Regex.Match(shape.Name, k_GroupNamePattern);
@@ -230,7 +220,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     children = m_BlendShapeGroups
                         .Where((x, i) => (m_GroupMask & 1 << i) != 0)
                         .SelectMany(x => x.BlendShapes)
-                        .Where(x => m_ShowZero || x.Index < m_Mesh.blendShapeCount && renderer.GetBlendShapeWeight(x.Index) != 0.0f)
+                        .Where(x => m_ShowZero || m_Mesh != null && x.Index < m_Mesh.blendShapeCount && renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                         .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
                         .Select(x => new Item(x))
                         .ToList<TreeViewItem>(),
@@ -259,7 +249,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        m_Property.arraySize = m_Mesh.blendShapeCount;
+                        m_Property.arraySize = m_Mesh != null ? m_Mesh.blendShapeCount : 0;
                         m_Property.GetArrayElementAtIndex(shape.Index).floatValue = value;
                     }
                 }
