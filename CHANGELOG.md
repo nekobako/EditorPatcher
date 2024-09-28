@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - Prevent blendshape rows to be selected on right click.
+- Fix UI misalignments.
 
 ### Security
 

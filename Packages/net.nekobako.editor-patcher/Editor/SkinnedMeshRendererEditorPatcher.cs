@@ -58,6 +58,8 @@ namespace net.nekobako.EditorPatcher.Editor
         {
             private const string k_DefaultGroupName = "Default";
             private const string k_GroupNamePattern = @"^(?:\W|\p{Pc}){3,}(.*?)(?:\W|\p{Pc}){3,}$";
+            private const int k_RowHeight = 24;
+            private const int k_LineHeight = 22;
 
             private static readonly GUIContent s_PropertyContent = new GUIContent("BlendShapes");
             private static readonly GUIContent s_ClampWeightsInfoContent = Traverse.Create(s_TargetType)
@@ -66,38 +68,55 @@ namespace net.nekobako.EditorPatcher.Editor
                 .GetValue<GUIContent>();
             private static readonly GUIStyle s_HeaderStyle = new GUIStyle("RL Header")
             {
-                fixedHeight = 30.0f,
+                fixedHeight = k_LineHeight + 8,
                 padding = new RectOffset(6, 6, 4, 4),
             };
             private static readonly GUIStyle s_BackgroundStyle = new GUIStyle("RL Background")
             {
-                fixedHeight = 0.0f,
+                fixedHeight = 0,
                 padding = new RectOffset(6, 6, 4, 4),
             };
             private static readonly GUIStyle s_SearchFieldStyle = new GUIStyle("SearchTextField")
             {
-                fixedHeight = 0.0f,
+                fixedHeight = 0,
                 margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_SearchFieldCancelButtonStyle = new GUIStyle("SearchCancelButton")
             {
-                fixedHeight = 0.0f,
+                fixedHeight = 0,
                 margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_SearchFieldCancelButtonEmptyStyle = new GUIStyle("SearchCancelButtonEmpty")
             {
-                fixedHeight = 0.0f,
+                fixedHeight = 0,
                 margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_PopupStyle = new GUIStyle("MiniPopup")
             {
-                fixedHeight = 0.0f,
+                fixedHeight = 0,
                 margin = new RectOffset(2, 2, 2, 2),
             };
             private static readonly GUIStyle s_ToggleStyle = new GUIStyle("LargeButton")
             {
-                fixedHeight = 0.0f,
+                fixedHeight = 0,
                 margin = new RectOffset(2, 2, 2, 2),
+            };
+            private static readonly GUIStyle s_SliderStyle = new GUIStyle()
+            {
+                overflow = new RectOffset(0, 0, (2 - k_RowHeight) / 2, (2 - k_RowHeight) / 2),
+            };
+            private static readonly GUIStyle s_SliderThumbStyle = new GUIStyle("HorizontalSliderThumb")
+            {
+                margin = new RectOffset(0, 0, (k_RowHeight - 10) / 2, (k_RowHeight - 10) / 2),
+            };
+            private static readonly GUIStyle s_SliderThumbExtentStyle = new GUIStyle("HorizontalSliderThumbExtent")
+            {
+                margin = new RectOffset(0, 0, (k_RowHeight - 10) / 2, (k_RowHeight - 10) / 2),
+            };
+            private static readonly GUIStyle s_SliderNumberFieldStyle = new GUIStyle("TextField")
+            {
+                fixedHeight = k_LineHeight,
+                alignment = TextAnchor.MiddleLeft,
             };
 
             private class Item : TreeViewItem
@@ -122,7 +141,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
             public BlendShapesDrawer() : base(new TreeViewState())
             {
-                rowHeight = 22.0f;
+                rowHeight = k_RowHeight;
                 useScrollView = false;
 #if UNITY_2022_1_OR_NEWER
                 enableItemHovering = true;
@@ -131,7 +150,14 @@ namespace net.nekobako.EditorPatcher.Editor
 
             public void Draw(SerializedProperty property)
             {
-                EditorGUILayout.PropertyField(property, s_PropertyContent, false);
+                var rect = EditorGUILayout.GetControlRect();
+                var content = EditorGUI.BeginProperty(rect, TempContent.Text("BlendShapes"), property);
+
+                property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup(rect, property.isExpanded, content);
+                EditorGUI.EndFoldoutHeaderGroup();
+
+                EditorGUI.EndProperty();
+
                 if (!property.isExpanded)
                 {
                     return;
@@ -164,12 +190,12 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     EditorGUI.BeginChangeCheck();
 
-                    var rect = EditorGUILayout.GetControlRect(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+                    rect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(k_LineHeight), GUILayout.ExpandHeight(true));
                     m_SearchText = m_SearchField.OnGUI(rect, m_SearchText, s_SearchFieldStyle, s_SearchFieldCancelButtonStyle, s_SearchFieldCancelButtonEmptyStyle);
 
-                    m_GroupMask = EditorGUILayout.MaskField(m_GroupMask, m_GroupNames, s_PopupStyle, GUILayout.Width(100.0f), GUILayout.ExpandHeight(true));
+                    m_GroupMask = EditorGUILayout.MaskField(m_GroupMask, m_GroupNames, s_PopupStyle, GUILayout.Width(100), GUILayout.ExpandHeight(true));
 
-                    m_ShowZero = GUILayout.Toggle(m_ShowZero, "0", s_ToggleStyle, GUILayout.Width(22.0f), GUILayout.ExpandHeight(true));
+                    m_ShowZero = GUILayout.Toggle(m_ShowZero, "0", s_ToggleStyle, GUILayout.Width(k_LineHeight), GUILayout.ExpandHeight(true));
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -181,14 +207,22 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     if (rootItem.children.Count > 0)
                     {
-                        var rect = EditorGUILayout.GetControlRect(false, totalHeight);
-                        rect.xMin -= 5.0f;
-                        rect.xMax += 5.0f;
+                        Traverse.Create<EditorGUI>()
+                            .Property("lineHeight")
+                            .SetValue(k_RowHeight);
+
+                        rect = EditorGUILayout.GetControlRect(false, totalHeight - 3);
+                        rect.min -= new Vector2(5, 2);
+                        rect.max += new Vector2(5, 1);
                         OnGUI(rect);
+
+                        Traverse.Create<EditorGUI>()
+                            .Property("lineHeight")
+                            .SetValue(EditorGUIUtility.singleLineHeight);
                     }
                     else
                     {
-                        EditorGUILayout.LabelField("List is Empty", GUILayout.Height(22.0f));
+                        EditorGUILayout.LabelField("List is Empty", GUILayout.Height(k_RowHeight - 3));
                     }
                 }
 
@@ -240,22 +274,35 @@ namespace net.nekobako.EditorPatcher.Editor
                 var shape = item.BlendShape;
 
                 var rect = args.rowRect;
-                rect.xMin += 5.0f;
-                rect.xMax -= 5.0f;
+                rect.min += new Vector2(5, 0);
+                rect.max -= new Vector2(5, 0);
 
                 if (shape.Index < m_Property.arraySize)
                 {
                     var prop = m_Property.GetArrayElementAtIndex(shape.Index);
-                    Traverse.Create<EditorGUI>()
-                        .Method(nameof(EditorGUI.Slider), rect, prop, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue, shape.Content)
-                        .GetValue();
+                    var content = EditorGUI.BeginProperty(rect, shape.Content, prop);
+
+                    EditorGUI.BeginChangeCheck();
+
+                    var value = Traverse.Create<EditorGUI>()
+                        .Method(nameof(EditorGUI.Slider), rect, content, prop.floatValue, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue,
+                            s_SliderNumberFieldStyle, s_SliderStyle, s_SliderThumbStyle, Texture2D.linearGrayTexture, s_SliderThumbExtentStyle)
+                        .GetValue<float>();
+
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        prop.floatValue = value;
+                    }
+
+                    EditorGUI.EndProperty();
                 }
                 else
                 {
                     EditorGUI.BeginChangeCheck();
 
                     var value = Traverse.Create<EditorGUI>()
-                        .Method(nameof(EditorGUI.Slider), rect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue)
+                        .Method(nameof(EditorGUI.Slider), rect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue,
+                            s_SliderNumberFieldStyle, s_SliderStyle, s_SliderThumbStyle, Texture2D.linearGrayTexture, s_SliderThumbExtentStyle)
                         .GetValue<float>();
 
                     if (EditorGUI.EndChangeCheck())
