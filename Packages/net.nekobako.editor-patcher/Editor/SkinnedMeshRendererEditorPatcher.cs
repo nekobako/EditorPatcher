@@ -264,6 +264,11 @@ namespace net.nekobako.EditorPatcher.Editor
                         m_Property.GetArrayElementAtIndex(shape.Index).floatValue = value;
                     }
                 }
+
+                if (Event.current.type == EventType.MouseDown && args.rowRect.Contains(Event.current.mousePosition))
+                {
+                    Event.current.Use();
+                }
             }
         }
 
