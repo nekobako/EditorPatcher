@@ -16,6 +16,7 @@ namespace net.nekobako.EditorPatcher.Editor
         private const string k_MenuPath = "Tools/Editor Patcher/Skinned Mesh Renderer Editor";
 
         private static readonly Type s_TargetType = AccessTools.TypeByName("UnityEditor.SkinnedMeshRendererEditor");
+        private static readonly Type s_GUIViewType = AccessTools.TypeByName("UnityEditor.GUIView");
         private static Dictionary<UnityEditor.Editor, BlendShapesDrawer> s_BlendShapesDrawers = new Dictionary<UnityEditor.Editor, BlendShapesDrawer>();
 
         private class BlendShape
@@ -123,6 +124,9 @@ namespace net.nekobako.EditorPatcher.Editor
             {
                 rowHeight = 22.0f;
                 useScrollView = false;
+#if UNITY_2022_1_OR_NEWER
+                enableItemHovering = true;
+#endif
             }
 
             public void Draw(SerializedProperty property)
@@ -177,7 +181,10 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     if (rootItem.children.Count > 0)
                     {
-                        OnGUI(EditorGUILayout.GetControlRect(false, totalHeight));
+                        var rect = EditorGUILayout.GetControlRect(false, totalHeight);
+                        rect.xMin -= 5.0f;
+                        rect.xMax += 5.0f;
+                        OnGUI(rect);
                     }
                     else
                     {
@@ -232,11 +239,15 @@ namespace net.nekobako.EditorPatcher.Editor
                 var item = args.item as Item;
                 var shape = item.BlendShape;
 
+                var rect = args.rowRect;
+                rect.xMin += 5.0f;
+                rect.xMax -= 5.0f;
+
                 if (shape.Index < m_Property.arraySize)
                 {
                     var prop = m_Property.GetArrayElementAtIndex(shape.Index);
                     Traverse.Create<EditorGUI>()
-                        .Method(nameof(EditorGUI.Slider), args.rowRect, prop, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue, shape.Content)
+                        .Method(nameof(EditorGUI.Slider), rect, prop, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue, shape.Content)
                         .GetValue();
                 }
                 else
@@ -244,7 +255,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     EditorGUI.BeginChangeCheck();
 
                     var value = Traverse.Create<EditorGUI>()
-                        .Method(nameof(EditorGUI.Slider), args.rowRect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue)
+                        .Method(nameof(EditorGUI.Slider), rect, shape.Content, 0.0f, shape.MinWeight, shape.MaxWeight, float.MinValue, float.MaxValue)
                         .GetValue<float>();
 
                     if (EditorGUI.EndChangeCheck())
@@ -290,6 +301,14 @@ namespace net.nekobako.EditorPatcher.Editor
         private static bool OnBlendShapeUI(UnityEditor.Editor __instance, SerializedProperty ___m_BlendShapeWeights)
         {
             if (!IsEnabled)
+            {
+                return true;
+            }
+
+            // Workaround for errors caused by TreeView.enableItemHovering = true
+            if (Traverse.Create(s_GUIViewType)
+                .Property("current")
+                .GetValue() == null)
             {
                 return true;
             }

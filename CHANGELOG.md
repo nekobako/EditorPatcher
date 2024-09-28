@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
+- Highlight blendshape rows on mouse hover.
 
 ### Changed
 - Draw property field even if there are no meshes or blendshapes.
