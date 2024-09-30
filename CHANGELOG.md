@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Draw property field even if there are no meshes or blendshapes.
+- Support more than 32 blendshape groups.
 
 ### Deprecated
 

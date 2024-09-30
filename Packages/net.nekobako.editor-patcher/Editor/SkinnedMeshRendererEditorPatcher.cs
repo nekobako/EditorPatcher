@@ -43,10 +43,13 @@ namespace net.nekobako.EditorPatcher.Editor
             }
         }
 
-        private class BlendShapeGroup
+        private class BlendShapeGroup : ISelectionData
         {
             public readonly string Name = string.Empty;
             public readonly List<BlendShape> BlendShapes = new List<BlendShape>();
+
+            string ISelectionData.DisplayName => Name;
+            bool ISelectionData.IsSelected { get; set; } = true;
 
             public BlendShapeGroup(string name)
             {
@@ -136,12 +139,11 @@ namespace net.nekobako.EditorPatcher.Editor
 
             private readonly List<BlendShapeGroup> m_Groups = new List<BlendShapeGroup>();
             private readonly SearchField m_SearchField = new SearchField();
+            private readonly MultiSelectionPopup m_FilterPopup = new MultiSelectionPopup();
 
             private SerializedProperty m_Property = null;
             private Mesh m_Mesh = null;
             private string m_SearchText = string.Empty;
-            private string[] m_GroupNames = Array.Empty<string>();
-            private int m_GroupMask = ~0;
             private bool m_ShowZero = true;
 
             public BlendShapesDrawer() : base(new TreeViewState())
@@ -204,7 +206,8 @@ namespace net.nekobako.EditorPatcher.Editor
                     rect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(k_LineHeight), GUILayout.ExpandHeight(true));
                     m_SearchText = m_SearchField.OnGUI(rect, m_SearchText, s_SearchFieldStyle, s_SearchFieldCancelButtonStyle, s_SearchFieldCancelButtonEmptyStyle);
 
-                    m_GroupMask = EditorGUILayout.MaskField(m_GroupMask, m_GroupNames, s_PopupStyle, GUILayout.Width(100), GUILayout.ExpandHeight(true));
+                    rect = EditorGUILayout.GetControlRect(GUILayout.Width(100), GUILayout.ExpandHeight(true));
+                    m_FilterPopup.OnGUI(rect, m_Groups, s_PopupStyle);
 
                     m_ShowZero = GUILayout.Toggle(m_ShowZero, "0", s_ToggleStyle, GUILayout.Width(k_LineHeight), GUILayout.ExpandHeight(true));
 
@@ -254,11 +257,6 @@ namespace net.nekobako.EditorPatcher.Editor
 
                     m_Groups.Last().BlendShapes.Add(shape);
                 }
-
-                m_GroupNames = m_Groups
-                    .Select(x => x.Name)
-                    .ToArray();
-                m_GroupMask = ~0;
             }
 
             protected override TreeViewItem BuildRoot()
@@ -268,7 +266,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 return new TreeViewItem(-1, -1)
                 {
                     children = m_Groups
-                        .Where((x, i) => (m_GroupMask & 1 << i) != 0)
+                        .Where(x => (x as ISelectionData).IsSelected)
                         .SelectMany(x => x.BlendShapes)
                         .Where(x => m_ShowZero || m_Mesh != null && x.Index < m_Mesh.blendShapeCount && renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                         .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
