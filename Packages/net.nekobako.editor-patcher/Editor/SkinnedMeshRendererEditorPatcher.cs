@@ -204,12 +204,14 @@ namespace net.nekobako.EditorPatcher.Editor
                     EditorGUI.BeginChangeCheck();
 
                     rect = EditorGUILayout.GetControlRect(GUILayout.MinWidth(k_LineHeight), GUILayout.ExpandHeight(true));
+                    m_SearchField.searchFieldControlID = GUIUtility.GetControlID(FocusType.Keyboard, rect);
                     m_SearchText = m_SearchField.OnGUI(rect, m_SearchText, s_SearchFieldStyle, s_SearchFieldCancelButtonStyle, s_SearchFieldCancelButtonEmptyStyle);
 
                     rect = EditorGUILayout.GetControlRect(GUILayout.Width(100), GUILayout.ExpandHeight(true));
                     m_FilterPopup.OnGUI(rect, m_Groups, s_PopupStyle);
 
-                    m_ShowZero = GUILayout.Toggle(m_ShowZero, "0", s_ToggleStyle, GUILayout.Width(k_LineHeight), GUILayout.ExpandHeight(true));
+                    rect = EditorGUILayout.GetControlRect(GUILayout.Width(k_LineHeight), GUILayout.ExpandHeight(true));
+                    m_ShowZero = GUI.Toggle(rect, GUIUtility.GetControlID(FocusType.Keyboard, rect), m_ShowZero, TempContent.Text("0"), s_ToggleStyle);
 
                     if (EditorGUI.EndChangeCheck())
                     {
