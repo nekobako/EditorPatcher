@@ -354,7 +354,7 @@ namespace net.nekobako.EditorPatcher.Editor
             harmony.Patch(AccessTools.Method("UnityEditor.SkinnedMeshRendererEditor:OnBlendShapeUI"),
                 new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(OnBlendShapeUI)));
 
-            AssemblyReloadEvents.beforeAssemblyReload += () => harmony.UnpatchAll();
+            AssemblyReloadEvents.beforeAssemblyReload += () => harmony.UnpatchAll(k_PatchId);
         }
 
         private static bool OnBlendShapeUI(UnityEditor.Editor __instance, SerializedProperty ___m_BlendShapeWeights)
