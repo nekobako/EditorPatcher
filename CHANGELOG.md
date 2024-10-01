@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.6.0] - 2024-10-01
+### Added
 - Highlight blendshape rows on mouse hover.
 - Add keyboard focus to blendshape search.
 
@@ -13,15 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Draw property field even if there are no meshes or blendshapes.
 - Support more than 32 blendshape groups.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 - Prevent blendshape rows to be selected on right click.
 - Fix UI misalignments.
-
-### Security
 
 ## [0.5.0] - 2024-09-26
 ### Changed
