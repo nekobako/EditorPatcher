@@ -14,9 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Do not unpatch all other patches before assembly reload.
 
 ### Security
+
+## [0.6.1] - 2024-10-01
+### Fixed
+- Do not unpatch all other patches before assembly reload.
 
 ## [0.6.0] - 2024-10-01
 ### Added
