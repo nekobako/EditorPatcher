@@ -221,7 +221,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
                 using (new EditorGUILayout.HorizontalScope(s_BackgroundStyle))
                 {
-                    if (rootItem.children.Count > 0)
+                    if (rootItem != null && rootItem.children.Count > 0)
                     {
                         // EditorGUI.Slider to be aligned vertically
                         s_EditorGUILineHeight.SetValue(k_RowHeight);
