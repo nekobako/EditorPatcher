@@ -14,9 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Fix errors with missing mesh.
 
 ### Security
+
+## [0.6.2] - 2024-10-03
+### Fixed
+- Fix errors with missing mesh.
 
 ## [0.6.1] - 2024-10-01
 ### Fixed
