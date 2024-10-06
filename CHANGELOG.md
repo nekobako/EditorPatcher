@@ -14,9 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Prevent checkboxes from appearing in the header when selecting multiple renderers.
 
 ### Security
+
+## [0.6.3] - 2024-10-06
+### Fixed
+- Prevent checkboxes from appearing in the header when selecting multiple renderers.
 
 ## [0.6.2] - 2024-10-03
 ### Fixed
