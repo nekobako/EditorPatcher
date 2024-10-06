@@ -160,8 +160,14 @@ namespace net.nekobako.EditorPatcher.Editor
                 var rect = EditorGUILayout.GetControlRect();
                 var content = EditorGUI.BeginProperty(rect, TempContent.Text("BlendShapes"), property);
 
+                // Prevent checkboxes from appearing in FoldoutHeaderGroup
+                EditorGUI.showMixedValue = false;
+
                 property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup(rect, property.isExpanded, content);
                 EditorGUI.EndFoldoutHeaderGroup();
+
+                // Restore to actual mixed value
+                EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
 
                 EditorGUI.EndProperty();
 
@@ -223,7 +229,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     if (rootItem != null && rootItem.children.Count > 0)
                     {
-                        // EditorGUI.Slider to be aligned vertically
+                        // Align texts in EditorGUI.Slider vertically
                         s_EditorGUILineHeight.SetValue(k_RowHeight);
 
                         rect = EditorGUILayout.GetControlRect(false, totalHeight - 3);
