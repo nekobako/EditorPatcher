@@ -60,7 +60,7 @@ namespace net.nekobako.EditorPatcher.Editor
         private class BlendShapesDrawer : TreeView
         {
             private const string k_DefaultGroupName = "Default";
-            private const string k_GroupNamePattern = @"^(?:\W|\p{Pc}){3,}(.*?)(?:\W|\p{Pc}){3,}$";
+            private const string k_GroupNamePattern = @"^(?:(?:\W|\p{Pc}){3,})(.*?)(?:(?:\W|\p{Pc}){3,})?$|^(?:(?:\W|\p{Pc}){3,})?(.*?)(?:(?:\W|\p{Pc}){3,})$";
             private const int k_RowHeight = 24;
             private const int k_LineHeight = 22;
 
@@ -260,7 +260,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     var match = Regex.Match(shape.Name, k_GroupNamePattern);
                     if (match.Success)
                     {
-                        m_Groups.Add(new BlendShapeGroup(match.Groups[1].Value));
+                        m_Groups.Add(new BlendShapeGroup(match.Groups.Skip(1).First(x => x.Success).Value));
                     }
 
                     m_Groups.Last().BlendShapes.Add(shape);

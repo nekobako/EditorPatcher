@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
+- Treat a blendshape name as a group name even if it contains a sequence of non-word characters at either the beginning or the end of the name
 
 ### Deprecated
 
