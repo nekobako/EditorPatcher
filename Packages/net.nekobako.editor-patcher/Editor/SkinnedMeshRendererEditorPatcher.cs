@@ -69,6 +69,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 {
                     @"\W",     // Non-word characters
                     @"\p{Pc}", // Connector punctuation
+                    "ー",      // Full-width dash
                 });
             private const int k_RowHeight = 24;
             private const int k_LineHeight = 22;
