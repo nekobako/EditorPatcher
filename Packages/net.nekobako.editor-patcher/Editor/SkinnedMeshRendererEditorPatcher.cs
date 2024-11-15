@@ -60,7 +60,16 @@ namespace net.nekobako.EditorPatcher.Editor
         private class BlendShapesDrawer : TreeView
         {
             private const string k_DefaultGroupName = "Default";
-            private const string k_GroupNamePattern = @"^(?:(?:\W|\p{Pc}){3,})(.*?)(?:(?:\W|\p{Pc}){3,})?$|^(?:(?:\W|\p{Pc}){3,})?(.*?)(?:(?:\W|\p{Pc}){3,})$";
+            private static readonly string k_GroupNamePattern = 
+                new Func<string[], string>(patterns =>
+                {
+                    var symbolPattern = string.Join("|", patterns);
+                    return $@"^(?:(?:{symbolPattern}){{3,}})(.*?)(?:(?:{symbolPattern}){{3,}})?$|^(?:(?:{symbolPattern}){{3,}})?(.*?)(?:(?:{symbolPattern}){{3,}})$";
+                })(new[]
+                {
+                    @"\W",     // Non-word characters
+                    @"\p{Pc}", // Connector punctuation
+                });
             private const int k_RowHeight = 24;
             private const int k_LineHeight = 22;
 
