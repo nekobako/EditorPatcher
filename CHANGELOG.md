@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Add prolonged sound marks to blendshape group name pattern.
 
 ### Changed
 
@@ -15,9 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Fix compile error on Unity 2019.
 
 ### Security
+
+## [0.8.0] - 2024-11-16
+### Added
+- Add prolonged sound marks to blendshape group name pattern.
+
+### Fixed
+- Fix compile error on Unity 2019.
 
 ## [0.7.0] - 2024-10-27
 ### Changed
