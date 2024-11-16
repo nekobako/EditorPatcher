@@ -66,6 +66,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 @"\W",     // Non-Word Characters
                 @"\p{Pc}", // Connector Punctuations
                 @"ー",     // Katakana-Hiragana Prolonged Sound Mark
+                @"ｰ",      // Halfwidth Katakana-Hiragana Prolonged Sound Mark
             });
             private static readonly string s_GroupNamePattern = string.Join("|", new[]
             {
