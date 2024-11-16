@@ -60,7 +60,20 @@ namespace net.nekobako.EditorPatcher.Editor
         private class BlendShapesDrawer : TreeView
         {
             private const string k_DefaultGroupName = "Default";
-            private const string k_GroupNamePattern = @"^(?:(?:\W|\p{Pc}){3,})(.*?)(?:(?:\W|\p{Pc}){3,})?$|^(?:(?:\W|\p{Pc}){3,})?(.*?)(?:(?:\W|\p{Pc}){3,})$";
+
+            private static readonly string s_GroupNameSymbolPattern = string.Join("|", new[]
+            {
+                @"\W",     // Non-Word Characters
+                @"\p{Pc}", // Connector Punctuations
+                @"ー",     // Katakana-Hiragana Prolonged Sound Mark
+                @"ｰ",      // Halfwidth Katakana-Hiragana Prolonged Sound Mark
+            });
+            private static readonly string s_GroupNamePattern = string.Join("|", new[]
+            {
+                $"^(?:(?:{s_GroupNameSymbolPattern}){{3,}})(.*?)(?:(?:{s_GroupNameSymbolPattern}){{3,}})?$",
+                $"^(?:(?:{s_GroupNameSymbolPattern}){{3,}})?(.*?)(?:(?:{s_GroupNameSymbolPattern}){{3,}})$",
+            });
+
             private const int k_RowHeight = 24;
             private const int k_LineHeight = 22;
 
@@ -257,7 +270,7 @@ namespace net.nekobako.EditorPatcher.Editor
                 for (var i = 0; m_Mesh != null && i < m_Mesh.blendShapeCount; i++)
                 {
                     var shape = new BlendShape(m_Mesh, i);
-                    var match = Regex.Match(shape.Name, k_GroupNamePattern);
+                    var match = Regex.Match(shape.Name, s_GroupNamePattern);
                     if (match.Success)
                     {
                         m_Groups.Add(new BlendShapeGroup(match.Groups.Skip(1).First(x => x.Success).Value));
