@@ -273,7 +273,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     var match = Regex.Match(shape.Name, s_GroupNamePattern);
                     if (match.Success)
                     {
-                        m_Groups.Add(new BlendShapeGroup(match.Groups.Skip(1).First(x => x.Success).Value));
+                        m_Groups.Add(new BlendShapeGroup(match.Groups.Cast<Group>().Skip(1).First(x => x.Success).Value));
                     }
 
                     m_Groups.Last().BlendShapes.Add(shape);
