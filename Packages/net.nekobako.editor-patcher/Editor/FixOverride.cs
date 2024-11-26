@@ -76,8 +76,11 @@ namespace net.nekobako.EditorPatcher.Editor
             if (match.Success)
             {
                 var arrayPath = match.Groups[1].Value;
-                var index = int.Parse(match.Groups[2].Value);
-
+                if (!int.TryParse(match.Groups[2].Value, out var index))
+                {
+                    return false;
+                }
+                
                 var arrayProp = serializedSource.FindProperty(arrayPath);
                 if (arrayProp != null && arrayProp.isArray && index + 1 > arrayProp.arraySize)
                 {
