@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace net.nekobako.EditorPatcher.Editor
 {
-    internal static class FixOverride
+    internal static class FixPrefabOverride
     {
         public static int RevertSameOverride(Object targetObject)
         {

@@ -4,12 +4,12 @@ using UnityEditor;
 
 namespace net.nekobako.EditorPatcher.Editor
 {
-    internal static class FixOverrideMenuItems
+    internal static class FixPrefabOverrideMenuItems
     {
         private const int k_MenuPriority = 22;
-        private const string k_FixPrefabPath = "GameObject/Editor Patcher/Fix Override";
-        private const string k_FixProjectPath = "Tools/Editor Patcher/Fix Override/Fix All in Project";
-        private const string k_AutoFixPath = "Tools/Editor Patcher/Fix Override/Enable Auto Fix";
+        private const string k_FixPrefabPath = "GameObject/Editor Patcher/Fix Prefab Override";
+        private const string k_FixProjectPath = "Tools/Editor Patcher/Fix Prefab Override/Fix All in Project";
+        private const string k_AutoFixPath = "Tools/Editor Patcher/Fix Prefab Override/Enable Auto Fix";
         private const string k_AutoFixKey = "net.nekobako.editor-patcher.EnableAutoFixOverride";
 
 #if UNITY_2021_3_OR_NEWER
@@ -62,7 +62,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     var obj = EditorUtility.InstanceIDToObject(data.instanceId);
                     if (obj == null) continue;
                     if (!PrefabUtility.IsPartOfAnyPrefab(obj)) continue;
-                    FixOverride.RevertSameOverride(obj);
+                    FixPrefabOverride.RevertSameOverride(obj);
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace net.nekobako.EditorPatcher.Editor
             int totalReverts = 0;
             foreach (var obj in objs)
             {
-                totalReverts += FixOverride.RevertSameOverride(obj);
+                totalReverts += FixPrefabOverride.RevertSameOverride(obj);
             }
             Debug.Log($"Revert {totalReverts} overrides in '{prefab.name}'.");
         }
