@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Add `Fix Prefab Override`, ability to revert equivalent prefab overrides
 
 ### Changed
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 ### Security
+
+## [0.9.0] - 2024-11-27
+### Added
+- Add `Fix Prefab Override`, ability to revert equivalent prefab overrides
 
 ## [0.8.0] - 2024-11-16
 ### Added
