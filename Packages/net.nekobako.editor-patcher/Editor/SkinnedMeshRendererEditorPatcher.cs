@@ -155,6 +155,7 @@ namespace net.nekobako.EditorPatcher.Editor
             private readonly MultiSelectionPopup m_FilterPopup = new MultiSelectionPopup();
 
             private SerializedProperty m_Property = null;
+            private SkinnedMeshRenderer m_Renderer = null;
             private Mesh m_Mesh = null;
             private Hash128 m_MeshAssetHash = default;
             private string m_SearchText = string.Empty;
@@ -209,8 +210,9 @@ namespace net.nekobako.EditorPatcher.Editor
                 }
 
                 m_Property = property;
+                m_Renderer = property.serializedObject.targetObject as SkinnedMeshRenderer;
 
-                var mesh = (property.serializedObject.targetObject as SkinnedMeshRenderer).sharedMesh;
+                var mesh = m_Renderer != null ? m_Renderer.sharedMesh : null;
                 var meshAssetHash = mesh != null ? AssetDatabase.GetAssetDependencyHash(AssetDatabase.GetAssetPath(mesh)) : default;
                 if (mesh != m_Mesh || meshAssetHash != m_MeshAssetHash)
                 {
@@ -218,6 +220,7 @@ namespace net.nekobako.EditorPatcher.Editor
                     m_MeshAssetHash = meshAssetHash;
 
                     UpdateGroups();
+                    LoadStates();
                     Reload();
                 }
 
@@ -237,6 +240,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
                     if (EditorGUI.EndChangeCheck())
                     {
+                        SaveStates();
                         Reload();
                     }
                 }
@@ -281,18 +285,47 @@ namespace net.nekobako.EditorPatcher.Editor
 
                     m_Groups.Last().BlendShapes.Add(shape);
                 }
+
+                m_SearchText = string.Empty;
+                m_ShowZero = true;
+            }
+
+            private void LoadStates()
+            {
+                var prefix = $"{k_PatchId}_{(m_Renderer != null ? m_Renderer.GetInstanceID() : 0)}_{(m_Mesh != null ? m_Mesh.GetInstanceID() : 0)}_{m_MeshAssetHash}";
+
+                var unselectedGroupIndices = SessionState.GetIntArray($"{prefix}_UnselectedGroupIndices", Array.Empty<int>());
+                for(var i = 0; i < m_Groups.Count; i++)
+                {
+                    (m_Groups[i] as ISelectionData).IsSelected = !unselectedGroupIndices.Contains(i);
+                }
+
+                m_SearchText = SessionState.GetString($"{prefix}_SearchText", m_SearchText);
+                m_ShowZero = SessionState.GetBool($"{prefix}_ShowZero", m_ShowZero);
+            }
+
+            private void SaveStates()
+            {
+                var prefix = $"{k_PatchId}_{(m_Renderer != null ? m_Renderer.GetInstanceID() : 0)}_{(m_Mesh != null ? m_Mesh.GetInstanceID() : 0)}_{m_MeshAssetHash}";
+
+                SessionState.SetIntArray($"{prefix}_UnselectedGroupIndices", m_Groups
+                    .Select((x, i) => (Index: i, (x as ISelectionData).IsSelected))
+                    .Where(x => !x.IsSelected)
+                    .Select(x => x.Index)
+                    .ToArray());
+
+                SessionState.SetString($"{prefix}_SearchText", m_SearchText);
+                SessionState.SetBool($"{prefix}_ShowZero", m_ShowZero);
             }
 
             protected override TreeViewItem BuildRoot()
             {
-                var renderer = m_Property.serializedObject.targetObject as SkinnedMeshRenderer;
-
                 return new TreeViewItem(-1, -1)
                 {
                     children = m_Groups
                         .Where(x => (x as ISelectionData).IsSelected)
                         .SelectMany(x => x.BlendShapes)
-                        .Where(x => m_ShowZero || m_Mesh != null && x.Index < m_Mesh.blendShapeCount && renderer.GetBlendShapeWeight(x.Index) != 0.0f)
+                        .Where(x => m_ShowZero || m_Mesh != null && x.Index < m_Mesh.blendShapeCount && m_Renderer != null && m_Renderer.GetBlendShapeWeight(x.Index) != 0.0f)
                         .Where(x => m_SearchText.Split().All(y => x.Name.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0))
                         .Select(x => new TreeViewItem<BlendShape>(x))
                         .ToList<TreeViewItem>(),
