@@ -156,6 +156,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
             private SerializedProperty m_Property = null;
             private Mesh m_Mesh = null;
+            private Hash128 m_MeshAssetHash = default;
             private string m_SearchText = string.Empty;
             private bool m_ShowZero = true;
 
@@ -210,9 +211,11 @@ namespace net.nekobako.EditorPatcher.Editor
                 m_Property = property;
 
                 var mesh = (property.serializedObject.targetObject as SkinnedMeshRenderer).sharedMesh;
-                if (mesh != m_Mesh)
+                var meshAssetHash = mesh != null ? AssetDatabase.GetAssetDependencyHash(AssetDatabase.GetAssetPath(mesh)) : default;
+                if (mesh != m_Mesh || meshAssetHash != m_MeshAssetHash)
                 {
                     m_Mesh = mesh;
+                    m_MeshAssetHash = meshAssetHash;
 
                     UpdateGroups();
                     Reload();
