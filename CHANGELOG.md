@@ -8,16 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
-- Keep blendshape list states per renderer.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Update blendshape list when mesh is updated.
 
 ### Security
+
+## [0.10.0] - 2025-01-25
+### Changed
+- Keep blendshape list states per renderer.
+
+### Fixed
+- Update blendshape list when mesh is updated.
 
 ## [0.9.0] - 2024-11-27
 ### Added
