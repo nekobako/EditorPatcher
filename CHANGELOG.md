@@ -14,10 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Array length may be applied to the parent prefab when fixing prefab override.
-- Prevent blendshapes that begin or end with 3 non-word characters (e.g. `eye_><`) from being treated as group name patterns.
 
 ### Security
+
+## [0.10.1] - 2025-02-01
+### Fixed
+- Array length may be applied to the parent prefab when fixing prefab override.
+- Prevent blendshapes that begin or end with 3 non-word characters (e.g. `eye_><`) from being treated as group name patterns.
 
 ## [0.10.0] - 2025-01-25
 ### Changed
