@@ -70,8 +70,8 @@ namespace net.nekobako.EditorPatcher.Editor
             });
             private static readonly string s_GroupNamePattern = string.Join("|", new[]
             {
-                $"^(?:(?:{s_GroupNameSymbolPattern}){{3,}})(.*?)(?:(?:{s_GroupNameSymbolPattern}){{3,}})?$",
-                $"^(?:(?:{s_GroupNameSymbolPattern}){{3,}})?(.*?)(?:(?:{s_GroupNameSymbolPattern}){{3,}})$",
+                $"^(?:(?:{s_GroupNameSymbolPattern}){{4,}})(.*?)(?:(?:{s_GroupNameSymbolPattern}){{4,}})?$",
+                $"^(?:(?:{s_GroupNameSymbolPattern}){{4,}})?(.*?)(?:(?:{s_GroupNameSymbolPattern}){{4,}})$",
             });
 
             private const int k_RowHeight = 24;
