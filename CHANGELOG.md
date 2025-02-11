@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Add button to focus on head in Avatar Preview.
 
 ### Changed
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 ### Security
+
+## [0.12.0] - 2025-02-11
+### Added
+- Add button to focus on head in Avatar Preview.
 
 ## [0.11.0] - 2025-02-10
 ### Added
