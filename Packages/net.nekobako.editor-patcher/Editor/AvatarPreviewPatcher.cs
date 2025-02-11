@@ -12,6 +12,12 @@ namespace net.nekobako.EditorPatcher.Editor
         private const string k_MenuPath = "Tools/Editor Patcher/Avatar Preview";
         private const string k_2DPref = "Avatarpreview2D";
 
+        private static readonly Lazy<GUIStyle> s_ToolbarButtonStyle = new Lazy<GUIStyle>(() => new GUIStyle("toolbarButton")
+        {
+            fixedWidth = 30,
+            margin = new RectOffset(-1, -1, 0, 0),
+        });
+
         private static bool IsEnabled
         {
             get => EditorPrefs.GetBool(k_MenuPath);
@@ -37,14 +43,20 @@ namespace net.nekobako.EditorPatcher.Editor
         {
             var harmony = new Harmony(k_PatchId);
 
+            harmony.CreateReversePatcher(AccessTools.PropertyGetter(AccessTools.TypeByName("UnityEditor.AvatarPreview"), "Animator"),
+                new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(GetAnimator_Reverse))).Patch();
+
+            harmony.CreateReversePatcher(AccessTools.PropertyGetter(AccessTools.TypeByName("UnityEditor.AvatarPreview"), "rootPosition"),
+                new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(GetRootPosition_Reverse))).Patch();
+
+            harmony.CreateReversePatcher(AccessTools.PropertyGetter(AccessTools.TypeByName("UnityEditor.AvatarPreview"), "bodyPosition"),
+                new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(GetBodyPosition_Reverse))).Patch();
+
             harmony.Patch(AccessTools.PropertySetter(AccessTools.TypeByName("UnityEditor.AvatarPreview"), "is2D"),
                 new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(SetIs2D)));
 
             harmony.Patch(AccessTools.Method("UnityEditor.AvatarPreview:ResetPreviewFocus"),
                 new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(ResetPreviewFocus)));
-
-            harmony.CreateReversePatcher(AccessTools.Method("UnityEditor.AvatarPreview:ResetPreviewFocus"),
-                new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(ResetPreviewFocus_Reverse))).Patch();
 
             harmony.Patch(AccessTools.Method("UnityEditor.AvatarPreview:SetPreview"),
                 postfix: new HarmonyMethod(typeof(AvatarPreviewPatcher), nameof(SetPreview_Postfix)));
@@ -69,6 +81,10 @@ namespace net.nekobako.EditorPatcher.Editor
 
             AssemblyReloadEvents.beforeAssemblyReload += () => harmony.UnpatchAll(k_PatchId);
         }
+
+        private static Animator GetAnimator_Reverse(object __instance) => throw new NotImplementedException();
+        private static Vector3 GetRootPosition_Reverse(object __instance) => throw new NotImplementedException();
+        private static Vector3 GetBodyPosition_Reverse(object __instance) => throw new NotImplementedException();
 
         private static bool SetIs2D(bool value, ref bool ___m_2D)
         {
@@ -96,11 +112,6 @@ namespace net.nekobako.EditorPatcher.Editor
             LoadStates(ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor);
 
             return false;
-        }
-
-        private static void ResetPreviewFocus_Reverse(object __instance)
-        {
-            throw new NotImplementedException();
         }
 
         private static void SetPreview_Postfix(object __instance, ref Vector3 ___m_PivotPositionOffset, ref Vector2 ___m_PreviewDir, ref float ___m_ZoomFactor, bool ___m_2D, float ___m_AvatarScale, Motion ___m_SourcePreviewMotion)
@@ -179,40 +190,63 @@ namespace net.nekobako.EditorPatcher.Editor
                 return;
             }
 
-            if (GUILayout.Button("-X", EditorStyles.toolbarButton))
+            if (GUILayout.Button("-X", s_ToolbarButtonStyle.Value))
             {
                 AlignView(new Vector2(-90.0f, 0.0f), __instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
                 SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
             }
-            if (GUILayout.Button("+X", EditorStyles.toolbarButton))
+            if (GUILayout.Button("+X", s_ToolbarButtonStyle.Value))
             {
                 AlignView(new Vector2(+90.0f, 0.0f), __instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
                 SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
             }
-            if (GUILayout.Button("-Y", EditorStyles.toolbarButton))
+            if (GUILayout.Button("-Y", s_ToolbarButtonStyle.Value))
             {
                 AlignView(new Vector2(0.0f, +90.0f), __instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
                 SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
             }
-            if (GUILayout.Button("+Y", EditorStyles.toolbarButton))
+            if (GUILayout.Button("+Y", s_ToolbarButtonStyle.Value))
             {
                 AlignView(new Vector2(0.0f, -90.0f), __instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
                 SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
             }
-            if (GUILayout.Button("-Z", EditorStyles.toolbarButton))
+            if (GUILayout.Button("-Z", s_ToolbarButtonStyle.Value))
             {
                 AlignView(new Vector2(0.0f, 0.0f), __instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
                 SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
             }
-            if (GUILayout.Button("+Z", EditorStyles.toolbarButton))
+            if (GUILayout.Button("+Z", s_ToolbarButtonStyle.Value))
             {
                 AlignView(new Vector2(180.0f, 0.0f), __instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
                 SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
             }
-            if (GUILayout.Button(EditorGUIUtility.IconContent("Refresh"), EditorStyles.toolbarButton))
+
+            var animator = GetAnimator_Reverse(__instance);
+            if (animator == null || !animator.isHuman)
             {
-                FocusView(__instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
-                SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
+                if (GUILayout.Button(EditorGUIUtility.IconContent("AvatarCompass"), s_ToolbarButtonStyle.Value))
+                {
+                    FocusView(__instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
+                    SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
+                }
+            }
+            else
+            {
+                if (GUILayout.Button(EditorGUIUtility.IconContent("AvatarMask On Icon"), s_ToolbarButtonStyle.Value))
+                {
+                    FocusView(__instance, ref ___m_PivotPositionOffset, ref ___m_PreviewDir, ref ___m_ZoomFactor, ___m_AvatarScale);
+                    SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
+                }
+                if (GUILayout.Button(EditorGUIUtility.IconContent("HeadZoomSilhouette"), s_ToolbarButtonStyle.Value))
+                {
+                    var head = animator.GetBoneTransform(HumanBodyBones.Head);
+                    if (head != null)
+                    {
+                        ___m_PivotPositionOffset = head.position - GetRootPosition_Reverse(__instance);
+                        ___m_ZoomFactor = 0.1f;
+                        SaveStates(___m_PivotPositionOffset, ___m_PreviewDir, ___m_ZoomFactor);
+                    }
+                }
             }
         }
 
@@ -228,21 +262,21 @@ namespace net.nekobako.EditorPatcher.Editor
             }
 #endif
 
-            ResetPreviewFocus_Reverse(__instance);
+            ___m_PivotPositionOffset = GetBodyPosition_Reverse(__instance) - GetRootPosition_Reverse(__instance);
             ___m_PreviewDir = direction;
             ___m_ZoomFactor = ___m_AvatarScale;
         }
 
         private static void AlignView(Vector2 direction, object __instance, ref Vector3 ___m_PivotPositionOffset, ref Vector2 ___m_PreviewDir, ref float ___m_ZoomFactor, float ___m_AvatarScale)
         {
-            ResetPreviewFocus_Reverse(__instance);
+            ___m_PivotPositionOffset = GetBodyPosition_Reverse(__instance) - GetRootPosition_Reverse(__instance);
             ___m_PreviewDir = direction;
             ___m_ZoomFactor = ___m_AvatarScale;
         }
 
         private static void FocusView(object __instance, ref Vector3 ___m_PivotPositionOffset, ref Vector2 ___m_PreviewDir, ref float ___m_ZoomFactor, float ___m_AvatarScale)
         {
-            ResetPreviewFocus_Reverse(__instance);
+            ___m_PivotPositionOffset = GetBodyPosition_Reverse(__instance) - GetRootPosition_Reverse(__instance);
             ___m_ZoomFactor = ___m_AvatarScale;
         }
 
