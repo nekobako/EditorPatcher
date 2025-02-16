@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML xmlns:engine="UnityEngine.UIElements"
+             xmlns:editor="UnityEditor.UIElements">
+    <engine:VisualElement class="list-item">
+        <engine:Toggle class="list-item-lock" />
+        <engine:Image class="list-item-icon" />
+        <engine:Label class="list-item-label" />
+    </engine:VisualElement>
+</engine:UXML>

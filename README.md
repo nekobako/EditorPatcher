@@ -25,6 +25,15 @@ Tools to enhance the Unity Editor.
   - Align and keep camera view in Avatar Preview.
   ![Avatar Preview](https://github.com/user-attachments/assets/be76f2fc-9543-4051-bc8d-96eb8e4c0691)
 
+### Object Shelf
+- `Tools > Editor Patcher > Object Shelf > Auto Spawn`
+  - Automatically spawn the window to keep object references by D&D.
+
+- `Tools > Editor Patcher > Object Shelf > Manual Spawn`
+  - Manually spawn the window to keep object references.
+
+https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
+
 ## Installation
 1. Press `Add to VCC` button in [VPM Listing](https://vpm.nekobako.net) and register the repository.
 2. Press `Manage Project` button at your project in VCC.

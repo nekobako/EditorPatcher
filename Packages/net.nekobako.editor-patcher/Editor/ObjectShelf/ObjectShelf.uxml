@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML xmlns:engine="UnityEngine.UIElements"
+             xmlns:editor="UnityEditor.UIElements"
+             xmlns:custom="net.nekobako.EditorPatcher.Editor">
+    <engine:VisualElement name="list-area">
+        <engine:VisualElement name="list-stripe"
+                              picking-mode="Ignore" />
+        <custom:ListView name="list-view"
+                         item-height="20"
+                         fixed-item-height="20"
+                         selection-type="Multiple" />
+    </engine:VisualElement>
+    <engine:VisualElement name="drop-area">
+        <engine:VisualElement name="drop-overlay">
+            <engine:VisualElement class="drop-overlay-frame" />
+            <engine:VisualElement class="drop-overlay-line drop-overlay-line-h" />
+            <engine:VisualElement class="drop-overlay-line drop-overlay-line-v" />
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>
