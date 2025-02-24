@@ -34,6 +34,11 @@ Tools to enhance the Unity Editor.
 
 https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
 
+### Platform Switcher
+- `Tools > Editor Patcher > Platform Switcher`
+  - Add buttons to switch platforms to main toolbar.
+  ![Platform Switcher](https://github.com/user-attachments/assets/922b4b38-82f8-4ae8-b1ac-69c253eb4586)
+
 ## Installation
 1. Press `Add to VCC` button in [VPM Listing](https://vpm.nekobako.net) and register the repository.
 2. Press `Manage Project` button at your project in VCC.
