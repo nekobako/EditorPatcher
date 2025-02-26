@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Add buttons to switch platforms to main toolbar.
 
 ### Changed
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 ### Security
+
+## [0.14.0] - 2025-02-27
+### Added
+- Add buttons to switch platforms to main toolbar.
 
 ## [0.13.0] - 2025-02-22
 ### Added
