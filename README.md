@@ -6,7 +6,8 @@ Tools to enhance the Unity Editor.
 ### Skinned Mesh Renderer Editor
 - `Tools > Editor Patcher > Skinned Mesh Renderer Editor`
   - Add the ability to search and filter blendshapes in the Inspector for Skinned Mesh Renderer.
-  ![Skinned Mesh Renderer Editor](https://github.com/user-attachments/assets/d39d6d9d-d5d4-46e6-a4b2-0e162e8c8eeb)
+
+![Skinned Mesh Renderer Editor](https://github.com/user-attachments/assets/d39d6d9d-d5d4-46e6-a4b2-0e162e8c8eeb)
 
 ### Fix Prefab Override
 - `Tools > Editor Patcher > Fix Prefab Override > Enable Auto Fix`
@@ -23,7 +24,8 @@ Tools to enhance the Unity Editor.
 ### Avatar Preview
 - `Tools > Editor Patcher > Avatar Preview`
   - Align and keep camera view in Avatar Preview.
-  ![Avatar Preview](https://github.com/user-attachments/assets/be76f2fc-9543-4051-bc8d-96eb8e4c0691)
+
+![Avatar Preview](https://github.com/user-attachments/assets/be76f2fc-9543-4051-bc8d-96eb8e4c0691)
 
 ### Object Shelf
 - `Tools > Editor Patcher > Object Shelf > Auto Spawn`
@@ -37,7 +39,8 @@ https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
 ### Platform Switcher
 - `Tools > Editor Patcher > Platform Switcher`
   - Add buttons to switch platforms to main toolbar.
-  ![Platform Switcher](https://github.com/user-attachments/assets/922b4b38-82f8-4ae8-b1ac-69c253eb4586)
+
+![Platform Switcher](https://github.com/user-attachments/assets/922b4b38-82f8-4ae8-b1ac-69c253eb4586)
 
 ## Installation
 1. Press `Add to VCC` button in [VPM Listing](https://vpm.nekobako.net) and register the repository.
