@@ -14,9 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 ### Fixed
-- Fix bones drawer style in SkinnedMeshRendererEditor.
 
 ### Security
+
+## [0.15.1] - 2025-06-21
+### Fixed
+- Fix bones drawer style in SkinnedMeshRendererEditor.
 
 ## [0.15.0] - 2025-06-21
 ### Added
