@@ -39,12 +39,6 @@ namespace net.nekobako.EditorPatcher.Editor
         {
             var harmony = new Harmony(k_PatchId);
 
-            harmony.Patch(AccessTools.PropertyGetter(AccessTools.TypeByName("UnityEditor.SerializedProperty"), "hasVisibleChildren"),
-                new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(GetHasVisibleChildren)));
-
-            harmony.Patch(AccessTools.Method("UnityEditor.SerializedProperty:NextVisible"),
-                new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(NextVisible)));
-
 #if UNITY_2020_2_OR_NEWER
             harmony.Patch(AccessTools.Method("UnityEditor.PropertyHandler:IsArrayReorderable"),
                 new HarmonyMethod(typeof(SkinnedMeshRendererEditorPatcher), nameof(IsArrayReorderable)));
@@ -59,55 +53,7 @@ namespace net.nekobako.EditorPatcher.Editor
             AssemblyReloadEvents.beforeAssemblyReload += () => harmony.UnpatchAll(k_PatchId);
         }
 
-        private static bool GetHasVisibleChildren(SerializedProperty __instance, ref bool __result)
-        {
-            if (!IsEnabled)
-            {
-                return true;
-            }
-
-            if (__instance.serializedObject.targetObject is SkinnedMeshRenderer)
-            {
-                if (__instance.propertyPath == "m_Bones" || __instance.propertyPath == "m_Bones.Array")
-                {
-                    __result = true;
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool NextVisible(SerializedProperty __instance, bool enterChildren, ref bool __result)
-        {
-            if (!IsEnabled)
-            {
-                return true;
-            }
-
-            if (__instance.serializedObject.targetObject is SkinnedMeshRenderer)
-            {
-                if (__instance.propertyPath == "m_Bones" && enterChildren)
-                {
-                    __result = __instance.Next(true);
-                    __result = __instance.Next(true);
-                    return false;
-                }
-                if (__instance.propertyPath == "m_Bones.Array" && enterChildren)
-                {
-                    __result = __instance.Next(true);
-                    return false;
-                }
-                if (__instance.propertyPath.StartsWith("m_Bones.Array"))
-                {
-                    __result = __instance.Next(false);
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
+#if UNITY_2020_2_OR_NEWER
         private static bool IsArrayReorderable(SerializedProperty property, ref bool __result)
         {
             if (!IsEnabled)
@@ -115,17 +61,15 @@ namespace net.nekobako.EditorPatcher.Editor
                 return true;
             }
 
-            if (property.serializedObject.targetObject is SkinnedMeshRenderer)
+            if (property.serializedObject.targetObject is SkinnedMeshRenderer && property.propertyPath == "m_Bones")
             {
-                if (property.propertyPath == "m_Bones" || property.propertyPath.StartsWith("m_Bones.Array"))
-                {
-                    __result = true;
-                    return false;
-                }
+                __result = true;
+                return false;
             }
 
             return true;
         }
+#endif
 
         private static bool OnBlendShapeUI(UnityEditor.Editor __instance, SerializedProperty ___m_BlendShapeWeights)
         {
@@ -160,7 +104,25 @@ namespace net.nekobako.EditorPatcher.Editor
 
             if (__instance.serializedObject.targetObject is SkinnedMeshRenderer)
             {
-                EditorGUILayout.PropertyField(__instance.serializedObject.FindProperty("m_Bones"));
+                var bonesProperty = __instance.serializedObject.FindProperty("m_Bones");
+#if UNITY_2020_2_OR_NEWER
+                EditorGUILayout.PropertyField(bonesProperty);
+#else
+                bonesProperty.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(bonesProperty.isExpanded, bonesProperty.displayName);
+                if (bonesProperty.isExpanded)
+                {
+                    using (new EditorGUI.IndentLevelScope())
+                    {
+                        var bonesSizeProperty = bonesProperty.FindPropertyRelative("Array.size");
+                        EditorGUILayout.PropertyField(bonesSizeProperty);
+                        for (var i = 0; i < bonesSizeProperty.intValue; i++)
+                        {
+                            EditorGUILayout.PropertyField(bonesProperty.GetArrayElementAtIndex(i));
+                        }
+                    }
+                }
+                EditorGUILayout.EndFoldoutHeaderGroup();
+#endif
             }
         }
     }
