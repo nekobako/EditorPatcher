@@ -109,19 +109,29 @@ namespace net.nekobako.EditorPatcher.Editor
                 EditorGUILayout.PropertyField(bonesProperty);
 #else
                 bonesProperty.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(bonesProperty.isExpanded, bonesProperty.displayName);
-                if (bonesProperty.isExpanded)
+                EditorGUILayout.EndFoldoutHeaderGroup();
+
+                if (!bonesProperty.isExpanded)
                 {
-                    using (new EditorGUI.IndentLevelScope())
+                    return;
+                }
+
+                if (bonesProperty.serializedObject.targetObjects.Length > 1)
+                {
+                    EditorGUILayout.HelpBox("Multi-object editing not supported.", MessageType.None);
+                    EditorGUILayout.Space();
+                    return;
+                }
+
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    var bonesSizeProperty = bonesProperty.FindPropertyRelative("Array.size");
+                    EditorGUILayout.PropertyField(bonesSizeProperty);
+                    for (var i = 0; i < bonesSizeProperty.intValue; i++)
                     {
-                        var bonesSizeProperty = bonesProperty.FindPropertyRelative("Array.size");
-                        EditorGUILayout.PropertyField(bonesSizeProperty);
-                        for (var i = 0; i < bonesSizeProperty.intValue; i++)
-                        {
-                            EditorGUILayout.PropertyField(bonesProperty.GetArrayElementAtIndex(i));
-                        }
+                        EditorGUILayout.PropertyField(bonesProperty.GetArrayElementAtIndex(i));
                     }
                 }
-                EditorGUILayout.EndFoldoutHeaderGroup();
 #endif
             }
         }
