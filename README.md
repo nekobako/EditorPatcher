@@ -5,25 +5,26 @@ Tools to enhance the Unity Editor.
 
 ### Skinned Mesh Renderer Editor
 - `Tools > Editor Patcher > Skinned Mesh Renderer Editor`
-  - Add the ability to search and filter blendshapes in the Inspector for Skinned Mesh Renderer.
+  - Replace the blendshapes drawer in the Skinned Mesh Renderer Inspector with one that supports search and filtering.
+  - Add a bone drawer to the Skinned Mesh Renderer Inspector.
 
 ![Skinned Mesh Renderer Editor](https://github.com/user-attachments/assets/d39d6d9d-d5d4-46e6-a4b2-0e162e8c8eeb)
 
 ### Fix Prefab Override
 - `Tools > Editor Patcher > Fix Prefab Override > Enable Auto Fix`
-  - Add the ability to automatically revert equivalent prefab overrides when editing properties. 
+  - Automatically revert prefab overrides that are equal to their original values. 
   - Accessible only in Unity 2021.3 and later.
 
 - `Tools > Editor Patcher > Fix Prefab Override > Fix All in Project`
-  - Revert all equivalent prefab overrides in a project.
+  - Revert all prefab overrides in the project that are equal to their original values.
 
 - `GameObject > Editor Patcher > Fix Prefab Override`
-  - Revert all equivalent prefab overrides in a prefab.
-  - Accessible via the right-click menu option on a GameObject.
+  - Revert all prefab overrides in the selected prefab that are equal to their original values.
+  - Accessible from the right-click context menu on the GameObject.
 
 ### Avatar Preview
 - `Tools > Editor Patcher > Avatar Preview`
-  - Align and keep camera view in Avatar Preview.
+  - Align and keep the camera view in the Avatar Preview.
 
 ![Avatar Preview](https://github.com/user-attachments/assets/be76f2fc-9543-4051-bc8d-96eb8e4c0691)
 
@@ -38,7 +39,7 @@ https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
 
 ### Platform Switcher
 - `Tools > Editor Patcher > Platform Switcher`
-  - Add buttons to switch platforms to main toolbar.
+  - Add the buttons to switch platforms in the main toolbar.
 
 ![Platform Switcher](https://github.com/user-attachments/assets/922b4b38-82f8-4ae8-b1ac-69c253eb4586)
 
