@@ -86,33 +86,26 @@ namespace net.nekobako.EditorPatcher.Editor
 
         private static void Spawn(bool isAutoClose)
         {
-            var rect = default(Rect);
+            var instance = default(ObjectShelf);
+
             if (HasOpenInstances<ObjectShelf>())
             {
-                rect = GetWindow<ObjectShelf>(null, false).position;
-                rect = new Rect(rect.xMax + 20, rect.yMin, 200, 200);
+                var rect = GetWindow<ObjectShelf>(null, false).position;
+                instance = CreateInstance<ObjectShelf>();
+
+                // Show window then set rect to ensure the specified position and size
+                instance.Show();
+                instance.position = new Rect(rect.xMax + 20, rect.yMin, 200, 200);
             }
             else
             {
-#if UNITY_2020_1_OR_NEWER
-                rect = EditorGUIUtility.GetMainWindowPosition();
-#else
-                var type = typeof(EditorWindow).Assembly.GetType("UnityEditor.ContainerWindow");
-                foreach (var container in type.GetProperty("windows").GetValue(null) as object[])
-                {
-                    if ((bool)type.GetMethod("IsMainWindow").Invoke(container, null))
-                    {
-                        rect = (Rect)type.GetProperty("position").GetValue(container);
-                        continue;
-                    }
-                }
-#endif
-                rect = new Rect(rect.xMin + 20, rect.yMax - 240, 200, 200);
+                instance = CreateInstance<ObjectShelf>();
+
+                // Set rect then show window to load previous position and size with default size
+                instance.position = new Rect(0, 0, 200, 200);
+                instance.Show();
             }
 
-            var instance = CreateInstance<ObjectShelf>();
-            instance.Show();
-            instance.position = rect;
             instance.titleContent = new GUIContent(k_WindowTitle);
             instance.m_IsAutoClose = isAutoClose;
         }
