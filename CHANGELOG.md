@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
-- Keep position and size of ObjectShelf window.
 
 ### Deprecated
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 ### Security
+
+## [0.16.0] - 2025-06-27
+### Changed
+- Keep position and size of ObjectShelf window.
 
 ## [0.15.2] - 2025-06-21
 ### Fixed
