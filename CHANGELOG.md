@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Add Rebase and Keep Overrides.
 
 ### Changed
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 ### Security
+
+## [0.17.0] - 2025-06-28
+### Added
+- Add Rebase and Keep Overrides.
 
 ## [0.16.0] - 2025-06-27
 ### Changed
