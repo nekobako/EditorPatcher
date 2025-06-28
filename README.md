@@ -10,18 +10,6 @@ Tools to enhance the Unity Editor.
 
 ![Skinned Mesh Renderer Editor](https://github.com/user-attachments/assets/d39d6d9d-d5d4-46e6-a4b2-0e162e8c8eeb)
 
-### Fix Prefab Override
-- `Tools > Editor Patcher > Fix Prefab Override > Enable Auto Fix`
-  - Automatically revert prefab overrides that are equal to their original values. 
-  - Accessible only in Unity 2021.3 and later.
-
-- `Tools > Editor Patcher > Fix Prefab Override > Fix All in Project`
-  - Revert all prefab overrides in the project that are equal to their original values.
-
-- `GameObject > Editor Patcher > Fix Prefab Override`
-  - Revert all prefab overrides in the selected prefab that are equal to their original values.
-  - Accessible from the right-click context menu on the GameObject.
-
 ### Avatar Preview
 - `Tools > Editor Patcher > Avatar Preview`
   - Align and keep the camera view in the Avatar Preview.
@@ -42,6 +30,23 @@ https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
   - Add the buttons to switch platforms in the main toolbar.
 
 ![Platform Switcher](https://github.com/user-attachments/assets/922b4b38-82f8-4ae8-b1ac-69c253eb4586)
+
+### Fix Prefab Override
+- `Tools > Editor Patcher > Fix Prefab Override > Enable Auto Fix`
+  - Automatically revert prefab overrides that are equal to their original values. 
+  - Accessible only in Unity 2021.3 and later.
+
+- `Tools > Editor Patcher > Fix Prefab Override > Fix All in Project`
+  - Revert all prefab overrides in the project that are equal to their original values.
+
+- `GameObject > Editor Patcher > Fix Prefab Override`
+  - Revert all prefab overrides in the selected prefab that are equal to their original values.
+  - Accessible from the right-click context menu on the GameObject.
+
+### Rebase and Keep Overrides
+- `Assets > Prefab > Rebase and Keep Overrides...`
+  - Recursively create new prefab variants with a specified base prefab while keeping their overrides.
+  - Accessible from the right-click context menu on the Prefab.
 
 ## Installation
 1. Press `Add to VCC` button in [VPM Listing](https://vpm.nekobako.net) and register the repository.
