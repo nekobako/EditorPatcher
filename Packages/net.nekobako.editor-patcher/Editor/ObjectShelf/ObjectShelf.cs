@@ -14,7 +14,7 @@ namespace net.nekobako.EditorPatcher.Editor
         private const string k_ManualSpawnMenuPath = "Tools/Editor Patcher/Object Shelf/Manual Spawn";
         private const string k_WindowTitle = "Object Shelf";
         private const string k_SpawnButtonIcon = "Toolbar Plus";
-        private const string k_FindSelectedMenuTitle = "Find Selected";
+        private const string k_LocateSelectedMenuTitle = "Locate Selected";
         private const string k_RemoveSelectedMenuTitle = "Remove Selected";
         private const string k_MissingObjectName = "<Missing>";
         private const string k_MissingObjectIcon = "DefaultAsset Icon";
@@ -236,6 +236,11 @@ namespace net.nekobako.EditorPatcher.Editor
             };
             m_ListView.itemsSource = m_ObjectReferences;
             m_ListView.selectionChanged += x => m_SelectedObjectReferences = x.Cast<Object>().ToArray();
+#if UNITY_2022_2_OR_NEWER
+            m_ListView.itemsChosen += x => LocateObjectReferences(x.Cast<Object>());
+#elif UNITY_2021_2_OR_NEWER
+            m_ListView.onItemsChosen += x => LocateObjectReferences(x.Cast<Object>());
+#endif
 
             IsEmpty = m_ObjectReferences.Count == 0;
         }
@@ -289,18 +294,8 @@ namespace net.nekobako.EditorPatcher.Editor
 
                 case (int)MouseButton.RightMouse:
                     var menu = new GenericMenu();
-                    menu.AddItem(new GUIContent(k_FindSelectedMenuTitle), false, () =>
-                    {
-                        Selection.objects = m_SelectedObjectReferences;
-                        foreach (var reference in m_SelectedObjectReferences)
-                        {
-                            EditorGUIUtility.PingObject(reference);
-                        }
-                    });
-                    menu.AddItem(new GUIContent(k_RemoveSelectedMenuTitle), false, () =>
-                    {
-                        RemoveObjectReferences(m_SelectedObjectReferences);
-                    });
+                    menu.AddItem(new GUIContent(k_LocateSelectedMenuTitle), false, () => { LocateObjectReferences(m_SelectedObjectReferences); });
+                    menu.AddItem(new GUIContent(k_RemoveSelectedMenuTitle), false, () => { RemoveObjectReferences(m_SelectedObjectReferences); });
                     menu.ShowAsContext();
                     break;
             }
@@ -455,6 +450,15 @@ namespace net.nekobako.EditorPatcher.Editor
         private bool IsLockedObjectReference(Object objectReference)
         {
             return m_LockedObjectReferences.Contains(objectReference);
+        }
+
+        private void LocateObjectReferences(IEnumerable<Object> objectReferences)
+        {
+            Selection.objects = objectReferences.ToArray();
+            foreach (var reference in objectReferences)
+            {
+                EditorGUIUtility.PingObject(reference);
+            }
         }
 
         private void TryAutoClose()
