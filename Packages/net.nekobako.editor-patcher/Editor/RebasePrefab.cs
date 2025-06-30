@@ -8,45 +8,55 @@ using UnityEngine;
 
 namespace net.nekobako.EditorPatcher.Editor
 {
-    internal static class RebaseAndKeepOverrides
+    internal static class RebasePrefab
     {
-        private const string k_MenuPath = "Assets/Prefab/Rebase and Keep Overrides...";
+        private const string k_KeepAllMenuPath = "Assets/Prefab/Rebase and Keep All...";
+        private const string k_KeepOverridesMenuPath = "Assets/Prefab/Rebase and Keep Overrides...";
 
-        [MenuItem(k_MenuPath, true)]
+        [MenuItem(k_KeepAllMenuPath, true, 50)]
+        [MenuItem(k_KeepOverridesMenuPath, true, 50)]
         private static bool Validate()
         {
-            return Selection.gameObjects.Length > 0 && Selection.gameObjects.Length == Selection.assetGUIDs.Length;
+            return Selection.gameObjects.Any() && Selection.gameObjects.All(EditorUtility.IsPersistent);
         }
 
-        [MenuItem(k_MenuPath, false)]
-        private static void Execute()
+        [MenuItem(k_KeepAllMenuPath, false, 50)]
+        private static void RebaseKeepAll()
         {
-            var context = SearchService.CreateContext("asset", "t:prefab");
-            var state = SearchViewState.CreatePickerState(null, context, (obj, canceled) =>
+            Rebase(Selection.gameObjects, true);
+        }
+
+        [MenuItem(k_KeepOverridesMenuPath, false, 50)]
+        private static void RebaseKeepOverrides()
+        {
+            Rebase(Selection.gameObjects, false);
+        }
+
+        private static void Rebase(GameObject[] targetPrefabAssets, bool keepAll)
+        {
+            SearchService.ShowObjectPicker((obj, canceled) =>
             {
-                if (obj is not GameObject basePrefabAsset || canceled)
+                if (canceled || obj is not GameObject basePrefabAsset || !EditorUtility.IsPersistent(obj))
                 {
                     return;
                 }
-                foreach (var targetPrefabAsset in Selection.gameObjects)
+                foreach (var targetPrefabAsset in targetPrefabAssets)
                 {
                     if (basePrefabAsset == targetPrefabAsset || GetAncestors(basePrefabAsset).Contains(targetPrefabAsset))
                     {
                         continue;
                     }
-                    Rebase(basePrefabAsset, targetPrefabAsset);
+                    Rebase(basePrefabAsset, targetPrefabAsset, keepAll);
                 }
-            }, null, null, typeof(GameObject));
-
-            SearchService.ShowPicker(state);
+            }, null, "p: t:[Prefab, Model]", null, typeof(GameObject));
         }
 
-        private static void Rebase(GameObject basePrefabAsset, GameObject targetPrefabAsset)
+        private static void Rebase(GameObject basePrefabAsset, GameObject targetPrefabAsset, bool keepAll)
         {
             var targetPrefabPath = AssetDatabase.GetAssetPath(targetPrefabAsset);
             var targetPrefabInstance = PrefabUtility.InstantiatePrefab(targetPrefabAsset) as GameObject;
 
-            PrefabUtility.UnpackPrefabInstance(targetPrefabInstance, PrefabUnpackMode.OutermostRoot, InteractionMode.AutomatedAction);
+            PrefabUtility.UnpackPrefabInstance(targetPrefabInstance, keepAll ? PrefabUnpackMode.Completely : PrefabUnpackMode.OutermostRoot, InteractionMode.AutomatedAction);
 
             if (PrefabUtility.IsOutermostPrefabInstanceRoot(targetPrefabInstance))
             {
@@ -62,9 +72,9 @@ namespace net.nekobako.EditorPatcher.Editor
                 PrefabUtility.ConvertToPrefabInstance(targetPrefabInstance, basePrefabAsset, new()
                 {
                     objectMatchMode = ObjectMatchMode.ByHierarchy,
-                    componentsNotMatchedBecomesOverride = true,
-                    gameObjectsNotMatchedBecomesOverride = true,
-                    recordPropertyOverridesOfMatches = true,
+                    componentsNotMatchedBecomesOverride = keepAll,
+                    gameObjectsNotMatchedBecomesOverride = keepAll,
+                    recordPropertyOverridesOfMatches = keepAll,
                     changeRootNameToAssetName = true,
                 }, InteractionMode.AutomatedAction);
             }
@@ -76,7 +86,7 @@ namespace net.nekobako.EditorPatcher.Editor
 
             foreach (var childPrefabAsset in GetChildren(targetPrefabAsset))
             {
-                Rebase(rebasedPrefabAsset, childPrefabAsset);
+                Rebase(rebasedPrefabAsset, childPrefabAsset, keepAll);
             }
         }
 

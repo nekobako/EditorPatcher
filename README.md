@@ -43,7 +43,11 @@ https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
   - Revert all prefab overrides in the selected prefab that are equal to their original values.
   - Accessible from the right-click context menu on the GameObject.
 
-### Rebase and Keep Overrides
+### Rebase Prefab
+- `Assets > Prefab > Rebase and Keep All...`
+  - Recursively create new prefab variants with a specified base prefab while keeping all properties.
+  - Accessible from the right-click context menu on the Prefab.
+
 - `Assets > Prefab > Rebase and Keep Overrides...`
   - Recursively create new prefab variants with a specified base prefab while keeping their overrides.
   - Accessible from the right-click context menu on the Prefab.
