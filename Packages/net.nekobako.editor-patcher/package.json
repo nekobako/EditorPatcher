@@ -1,6 +1,6 @@
 {
   "name": "net.nekobako.editor-patcher",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "displayName": "Editor Patcher",
   "description": "Tools to enhance the Unity Editor",
   "unity": "2019.4",
@@ -9,7 +9,7 @@
     "url": "https://nekobako.net"
   },
   "license": "MIT",
-  "url": "https://github.com/nekobako/EditorPatcher/releases/download/0.17.0/net.nekobako.editor-patcher-0.17.0.zip",
+  "url": "https://github.com/nekobako/EditorPatcher/releases/download/0.18.0/net.nekobako.editor-patcher-0.18.0.zip",
   "vpmDependencies": {
     "com.vrchat.base": ">=3.4.2"
   }

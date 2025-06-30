@@ -6,8 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 ### Added
-- Double click ObjectShelf item to locate objects.
-- Add Rebase and Keep All.
 
 ### Changed
 
@@ -18,6 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 ### Security
+
+## [0.18.0] - 2025-06-30
+### Added
+- Double click ObjectShelf item to locate objects.
+- Add Rebase and Keep All.
 
 ## [0.17.0] - 2025-06-28
 ### Added
