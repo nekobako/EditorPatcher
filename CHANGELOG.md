@@ -12,11 +12,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Deprecated
 
 ### Removed
-- Remove unnecessary dependency to VRChat SDK.
 
 ### Fixed
 
 ### Security
+
+## [1.0.0] - 2025-10-11
+### Removed
+- Remove unnecessary dependency to VRChat SDK.
 
 ## [0.18.0] - 2025-06-30
 ### Added
