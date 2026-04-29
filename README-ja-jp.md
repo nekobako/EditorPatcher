@@ -8,7 +8,7 @@ Unity Editor を使いやすくするツール群です。
 2. プロジェクトの `Manage Project` ボタンを押します。
 3. `Editor Patcher` パッケージの右にある `+` ボタンを押します。
 
-## Usage
+## 使い方
 
 ### Skinned Mesh Renderer Editor
 - `Tools > Editor Patcher > Skinned Mesh Renderer Editor`
@@ -36,6 +36,12 @@ https://github.com/user-attachments/assets/d86f9f7d-83e6-4ec2-b1dd-cfe2e1a27276
   - メインツールバーにプラットフォームを切り替えるボタンを追加します。
 
 ![Platform Switcher](https://github.com/user-attachments/assets/7864e699-26e3-42f7-af0c-5109b08fe269)
+
+### Execute Unity Constraints in Edit Mode
+- `Tools > Editor Patcher > Execute Unity Constraints in Edit Mode`
+  - Edit Mode で Unity Constraint を実行するかどうかを切り替えます。
+
+![Execute Unity Constraints in Edit Mode](https://github.com/user-attachments/assets/3f883df4-dccb-49d5-81fa-6f3d64b05961)
 
 ### Rebase Prefab
 - `Assets > Prefab > Rebase and Keep All...`
